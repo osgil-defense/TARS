@@ -1,4 +1,5 @@
 crewai==0.28.6
 crewai==0.28.6
 crewai-tools==0.1.6
-
+langchain==0.1.14
+langchain-google-genai==1.0.1
