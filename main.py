@@ -29,7 +29,7 @@ CopyWriter = Agent(
     goal="Analyze logs produced by various penetration testing tools and identify important information",
     backstory="You are an expert security analyst that identifies critical security vulnerabilites",
     verbose=True,
-    allow_delegation=False,
+    allow_delegation=True,
     llm=llm,
     tools=[tools.search],
 )
@@ -39,18 +39,18 @@ SEO_Researcher = Agent(
     goal="Take important security insights from security analysts and format them to make them understandable for normal adults",
     backstory="You are an expert in security communications who helps normal people understand security insights made by professionals" ,
     verbose=True,
-    allow_delegation=False,
+    allow_delegation=True,
     llm=llm,
     tools=[tools.search],
 )
 
 # Define your agents with roles and goals
 researcher = Agent(
-    role="Researcher",
-    goal="You provide results on the basis of Facts and only Facts along with supported doc related URLs ,You go to the root cause and give the best possible outcomes",
-    backstory="You're an ai researcher who researches on the field of  AI and have won multiple awards",
+    role="Penetration Testing Manager",
+    goal="Utilize a penetration testing toolkit to generate useful security analytics",
+    backstory="You're an expert penetration testing manager who helps their customers identify security weaknesses",
     verbose=True,
-    allow_delegation=False,
+    allow_delegation=True,
     llm=llm,
     tools=[tools.search],
 )
