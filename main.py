@@ -25,9 +25,9 @@ NPMGOD = Agent(
 
 # Define your agents with roles and goals
 CopyWriter = Agent(
-    role="Copy Writer",
-    goal="To write the best article",
-    backstory="You're an experienced Copy writer who writes Technical articles",
+    role="Security Analyst",
+    goal="Analyze logs produced by various penetration testing tools and identify important information",
+    backstory="You are an expert security analyst that identifies critical security vulnerabilites",
     verbose=True,
     allow_delegation=False,
     llm=llm,
@@ -35,9 +35,9 @@ CopyWriter = Agent(
 )
 
 SEO_Researcher = Agent(
-    role="SEO analyst",
-    goal="To Give the best seo based analyst tags",
-    backstory="You're an experienced seo analyst who Give the best seo tags",
+    role="Security Communications Manager",
+    goal="Take important security insights from security analysts and format them to make them understandable for normal adults",
+    backstory="You are an expert in security communications who helps normal people understand security insights made by professionals" ,
     verbose=True,
     allow_delegation=False,
     llm=llm,
