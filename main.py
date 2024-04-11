@@ -4,44 +4,13 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.tools import DuckDuckGoSearchRun
 from subprocess import Popen, PIPE
 
-# import requests
-# def get_external_ip():
-#     try:
-#         response = requests.get('https://api.ipify.org')
-#         ip_address = response.text
-#         return ip_address
-#     except requests.RequestException as e:
-#         return f"Error: {e}"
-# # Example usage
-# ip_address = get_external_ip()
-# print(f"My external IP address is: {ip_address}")
+import tools
 
 llm = ChatGoogleGenerativeAI(
     model="gemini-pro",
     verbose=True,
     temperature=0.5,
 )
-
-
-@tool("DuckDuckGoSearch")
-def search(query: str):
-    """Search the web for information on a given topic"""
-    return DuckDuckGoSearchRun().run(query)
-
-
-@tool("RunCommand")
-def runcommand(command: str) -> str:
-    """Run a UNIX Command"""
-    if command is None:
-        raise ValueError("Command is required")
-
-    process = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
-    stdout, stderr = process.communicate()
-
-    if process.returncode != 0:
-        return f"Error executing command: {stderr.decode('utf-8')}"
-
-    return stdout.decode("utf-8")
 
 
 NPMGOD = Agent(
@@ -51,7 +20,7 @@ NPMGOD = Agent(
     verbose=True,
     allow_delegation=False,
     llm=llm,
-    tools=[runcommand],
+    tools=[tools.execute_unix_cmd],
 )
 
 # Define your agents with roles and goals
@@ -62,7 +31,7 @@ CopyWriter = Agent(
     verbose=True,
     allow_delegation=False,
     llm=llm,
-    tools=[search],
+    tools=[tools.search],
 )
 
 SEO_Researcher = Agent(
@@ -72,7 +41,7 @@ SEO_Researcher = Agent(
     verbose=True,
     allow_delegation=False,
     llm=llm,
-    tools=[search],
+    tools=[tools.search],
 )
 
 # Define your agents with roles and goals
@@ -83,7 +52,7 @@ researcher = Agent(
     verbose=True,
     allow_delegation=False,
     llm=llm,
-    tools=[search],
+    tools=[tools.search],
 )
 
 # Create tasks for your agents

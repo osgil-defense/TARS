@@ -6,7 +6,8 @@ https://googleai.devpost.com/
 
 ## Tools
 
-- [ ] general unix execution
+- [X] general unix execution
+- [ ] curl
 - [ ] nmap
 - [ ] burp suite
 - [ ] wireshark
@@ -15,4 +16,3 @@ https://googleai.devpost.com/
 - [ ] john the ripper
 - [ ] sqlmap
 - [ ] autopsy
-- [ ] curl
