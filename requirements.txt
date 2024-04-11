@@ -4,3 +4,4 @@ crewai-tools==0.1.6
 langchain==0.1.14
 langchain-google-genai==1.0.1
 requests==2.31.0
+duckduckgo_search==5.3.0

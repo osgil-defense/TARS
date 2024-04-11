@@ -19,6 +19,8 @@ def nmap_tool(target: str, options: str = "") -> str:
 
     command = f"nmap {options} {target}"
 
+    # print(f"Running Nmap: {command}")
+
     # Execute the nmap command
     process = subprocess.Popen(
         command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
