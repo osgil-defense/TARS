@@ -3,7 +3,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.tools import DuckDuckGoSearchRun
 from subprocess import Popen, PIPE
 from crewai import Agent, Task, Crew, Process
-from py_main.tools import nmap_tool, search, execute_unix_cmd
+from .tools import nmap_tool, search, execute_unix_cmd
 
 llm = ChatGoogleGenerativeAI(
     model="gemini-pro",
