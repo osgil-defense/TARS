@@ -3,7 +3,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.tools import DuckDuckGoSearchRun
 from subprocess import Popen, PIPE
 from crewai import Agent, Task, Crew, Process
-from tools import nmap_tool, search, execute_unix_cmd
+from py_main.tools import nmap_tool, search, execute_unix_cmd
 
 llm = ChatGoogleGenerativeAI(
     model="gemini-pro",
@@ -16,7 +16,7 @@ NmapAgent = Agent(
     goal="Map the digital terrain, identifying open ports and potential security breaches.",
     backstory="An experienced digital explorer, always on the lookout for network vulnerabilities.",
     verbose=True,
-    allow_delegation=False,
+    allow_delegation=True,
     # llm=llm,
     tools=[nmap_tool],
 )
@@ -26,7 +26,7 @@ ResearcherAgent = Agent(
     goal="Uncover the secrets of network vulnerabilities and how to mend them.",
     backstory="With a keen eye for detail, you delve into the depths of cyberspace to find answers.",
     verbose=True,
-    allow_delegation=False,
+    allow_delegation=True,
     # llm=llm,
     tools=[search],
 )

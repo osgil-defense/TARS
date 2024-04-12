@@ -4,7 +4,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.tools import DuckDuckGoSearchRun
 from subprocess import Popen, PIPE
 
-import tools
+import py_main.tools as tools
 
 llm = ChatGoogleGenerativeAI(
     model="gemini-pro",
