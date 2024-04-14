@@ -3,6 +3,79 @@ import subprocess
 from subprocess import Popen, PIPE
 from crewai_tools import tool
 import requests
+import json
+import os
+
+
+@tool("NotifyCyberGetPastWeekData")
+def get_past_week_data():
+    """
+    Get the latest cybersecurity news in the last 7 days from Notify Cyber
+
+    Raises:
+        ValueError: If the NC_API_TOKEN environment variable is not set.
+        Exception: If the API request fails.
+
+    Returns:
+        JSON response from the API.
+    """
+    auth_token = os.getenv("NC_API_TOKEN")
+    if not auth_token:
+        raise ValueError("NC_API_TOKEN environment variable is not set")
+
+    url = "https://nc-api.vercel.app/past_week"
+    response = requests.get(url, headers={"Authorization": auth_token})
+
+    if response.ok:
+        output = response.json()
+
+        # (April 13, 2024) this is a very janky fix for the token limit issue with a model
+        output = output[:10]
+
+        return output
+    else:
+        raise Exception(
+            f"Failed to fetch past week data: {response.status_code} - {response.text}"
+        )
+
+
+@tool("NotifyCyberSearch")
+def search_data(queries: list):
+    """
+    Search for key words in a cybersecurity news database hosted by Notify Cyber
+
+    Parameters:
+        queries (list of str): List of keywords to search for from the API.
+
+    Raises:
+        ValueError: If the NC_API_TOKEN environment variable is not set, if queries is not a list of strings, or if any query is not a string.
+        Exception: If the API request fails.
+
+    Returns:
+        JSON response from the API.
+    """
+    if not isinstance(queries, list) or not all(
+        isinstance(query, str) for query in queries
+    ):
+        raise ValueError("Queries must be a list of strings")
+
+    auth_token = os.getenv("NC_API_TOKEN")
+    if not auth_token:
+        raise ValueError("NC_API_TOKEN environment variable is not set")
+
+    # Joining the list of queries into a single string separated by commas
+    query_string = ",".join(queries)
+    url = f"https://nc-api.vercel.app/search?{query_string}"
+    response = requests.get(url, headers={"Authorization": auth_token})
+    if response.ok:
+        output = response.json()
+        
+        # (April 13, 2024) this is a very janky fix for the token limit issue with a model
+        output = output[:10]
+        
+        return output
+    else:
+        raise Exception(f"Failed to search: {response.status_code} - {response.text}")
 
 
 @tool("NmapTool")
