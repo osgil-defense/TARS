@@ -9,9 +9,12 @@ import os
 
 
 @tool("NotifyCyberGetPastWeekData")
-def get_past_week_data():
+def get_past_week_data(limit=10):
     """
-    Get the latest cybersecurity news in the last 7 days from Notify Cyber
+    Get the latest cybersecurity news in the last 7 days from Notify Cyber.
+
+    Args:
+        limit (int): Number of news items to return.
 
     Raises:
         ValueError: If the NC_API_TOKEN environment variable is not set.
@@ -30,8 +33,8 @@ def get_past_week_data():
     if response.ok:
         output = response.json()
 
-        # (April 13, 2024) this is a very janky fix for the token limit issue with a model
-        output = output[:10]
+        # limited the number of news items to not surpase token limit
+        output = output[:limit]
 
         return output
     else:
@@ -57,7 +60,9 @@ def search_data(queries: list, n: int = 10):
     Returns:
         JSON response from the API.
     """
-    if not isinstance(queries, list) or not all(isinstance(query, str) for query in queries):
+    if not isinstance(queries, list) or not all(
+        isinstance(query, str) for query in queries
+    ):
         raise ValueError("Queries must be a list of strings")
     if not isinstance(n, int) or n < 1:
         raise ValueError("n must be an integer greater than 0")
@@ -90,7 +95,11 @@ def search_data(queries: list, n: int = 10):
     # distribute entry selection across sources to fill output without exceeding limit per source or total
     output = []
     existing_ids = []
-    total_entries = sum(len(entries) for keyword in sourced_all_results for source, entries in sourced_all_results[keyword].items())
+    total_entries = sum(
+        len(entries)
+        for keyword in sourced_all_results
+        for source, entries in sourced_all_results[keyword].items()
+    )
     entry_limit = max(1, n // max(1, total_entries))
     for keyword in sourced_all_results:
         for source in sourced_all_results[keyword]:
@@ -103,15 +112,17 @@ def search_data(queries: list, n: int = 10):
                         entry["keyword"] = keyword
                         output.append(entry)
                     count += 1
-    
+
     # clean up final output to help reduce token count and only keep the information that matters
-    keys_to_remove = {'id', 'source', 'title'}
-    filtered_data = [{k: v for k, v in d.items() if k not in keys_to_remove} for d in output]
+    keys_to_remove = {"id", "source", "title"}
+    filtered_data = [
+        {k: v for k, v in d.items() if k not in keys_to_remove} for d in output
+    ]
     for item in filtered_data:
         date = f"{datetime.datetime.utcfromtimestamp(item['recorded']).strftime('%Y-%m-%d %H:%M:%S')} UTC"
-        del item['recorded']
+        del item["recorded"]
         item["date"] = date
-    
+
     return filtered_data
 
 
