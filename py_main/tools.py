@@ -8,41 +8,6 @@ import json
 import os
 
 
-@tool("NotifyCyberGetPastWeekData")
-def get_past_week_data(limit=10):
-    """
-    Get the latest cybersecurity news in the last 7 days from Notify Cyber.
-
-    Args:
-        limit (int): Number of news items to return.
-
-    Raises:
-        ValueError: If the NC_API_TOKEN environment variable is not set.
-        Exception: If the API request fails.
-
-    Returns:
-        JSON response from the API.
-    """
-    auth_token = os.getenv("NC_API_TOKEN")
-    if not auth_token:
-        raise ValueError("NC_API_TOKEN environment variable is not set")
-
-    url = "https://nc-api.vercel.app/past_week"
-    response = requests.get(url, headers={"Authorization": auth_token})
-
-    if response.ok:
-        output = response.json()
-
-        # limited the number of news items to not surpase token limit
-        output = output[:limit]
-
-        return output
-    else:
-        raise Exception(
-            f"Failed to fetch past week data: {response.status_code} - {response.text}"
-        )
-
-
 @tool("NotifyCyberSearch")
 def search_data(queries: list, n: int = 10):
     """
