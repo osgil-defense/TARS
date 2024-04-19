@@ -1,4 +1,4 @@
-from langchain_community.tools import DuckDuckGoSearchRun
+from langchain_community.tools import DuckDuckGoSearchRun, ShellTool
 import subprocess
 from subprocess import Popen, PIPE
 from crewai_tools import tool
@@ -159,16 +159,26 @@ def search(query: str):
     return DuckDuckGoSearchRun().run(query)
 
 
+# @tool("ExecuteUnixCmd")
+# def execute_unix_cmd(command: str) -> str:
+#     """Execute Unix commands in a unix-based shell"""
+#     if command is None:
+#         raise ValueError("Command is required")
+
+#     process = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
+#     stdout, stderr = process.communicate()
+
+#     if process.returncode != 0:
+#         return f"Error executing command: {stderr.decode('utf-8')}"
+
+#     return stdout.decode("utf-8")
+
+# Langchain Implementation of unix command execution
 @tool("ExecuteUnixCmd")
-def execute_unix_cmd(command: str) -> str:
+def execute_unix_cmd(commands: list[str]) -> str:
     """Execute Unix commands in a unix-based shell"""
-    if command is None:
+    if commands is None:
         raise ValueError("Command is required")
-
-    process = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
-    stdout, stderr = process.communicate()
-
-    if process.returncode != 0:
-        return f"Error executing command: {stderr.decode('utf-8')}"
-
-    return stdout.decode("utf-8")
+    shell_tool = ShellTool()
+    val = shell_tool.run({"commands": commands})
+    return val
