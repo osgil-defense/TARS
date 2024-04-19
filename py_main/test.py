@@ -58,13 +58,13 @@ task1 = Task(
 )
 
 task2 = Task(
-    description="Scan the IP address to find open ports, only scan the most popular ports that can be prone to attacks and some less obvious ports as well",
+    description="Scan the IP address to find open ports, only scan the most popular ports that can be prone to attacks and some less obvious ports as well. But, DO NOT Scan more then 10 ports.",
     agent=NmapAgent,
     expected_output="Open ports and services",
 )
 
 task3 = Task(
-    description="Analyze open ports for known vulnerabilities, make sure this process does not take long (optimize it)",
+    description="Analyze open ports for known vulnerabilities, make sure this process does not take long (optimize it. DO NOT Scan more then 10 ports)",
     agent=NmapAgent,
     expected_output="Vulnerabilities list",
 )
