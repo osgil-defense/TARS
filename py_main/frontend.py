@@ -25,7 +25,7 @@ with st.form('my_form'):
             expect = main.npmgod.kickoff()
             st.warning("PROCESS HAS FINISHED:" + expect)  # Now this only runs when the form is submitted
             print(os.environ["WEBSITE"])
-            sys_prompt = "You are a helpful cybersecurity analyst. Help the user understand the following network log output:" + expect
+            sys_prompt = "The following network log output will be interpreted by a helpful cybersecurity analyst:\n " + expect
 
 
 if "openai_model" not in st.session_state:
