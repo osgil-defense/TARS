@@ -58,9 +58,9 @@ researcher = Agent(
 
 # Create tasks for your agents
 tasku = Task(
-    description="acquire information on the IP",
+    description="acquires information on the ip, then explains it",
     agent=NPMGOD,
-    expected_output="IP information",
+    expected_output="IP information with an explanation ",
 )
 # task1 = Task(
 #     description="reseach on crew ai, reference url = https://github.com/joaomdmoura/crewAI",
