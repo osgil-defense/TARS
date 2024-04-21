@@ -35,7 +35,7 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 time.sleep(0.5)
 st.session_state.messages.append({"role": "system", "content": sys_prompt})
-
+# TODO: Make this stop repeating itself for some reason
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
