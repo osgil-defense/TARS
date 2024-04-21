@@ -2,9 +2,14 @@ import streamlit as st
 import os
 import main
 from openai import OpenAI
+import time
 
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 st.set_page_config(page_title="MEDUSA DEMO")
 st.title('MEDUSA DEMO')
+expect = ""
+pingus = False
+sys_prompt = "Pending..."
 
 os.environ['WEBSITE'] = st.sidebar.text_input('Enter website to test here')
 
@@ -16,22 +21,27 @@ with st.form('my_form'):
         if not os.environ['WEBSITE']:
             st.warning('ENTER A WEBSITE BEFORE ATTEMPTING!', icon='⚠')
         else:
-            st.warning("PROCESS HAS FINISHED:" + main.npmgod.kickoff())  # Now this only runs when the form is submitted
-            
+            pingus = True
+            expect = main.npmgod.kickoff()
+            st.warning("PROCESS HAS FINISHED:" + expect)  # Now this only runs when the form is submitted
             print(os.environ["WEBSITE"])
+            sys_prompt = "You are a helpful cybersecurity analyst. Help the user understand the following network log output:" + expect
 
-client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+
 if "openai_model" not in st.session_state:
-    st.session_state["openai_model"] = "gpt-3.5-turbo"
+    st.session_state["openai_model"] = "gpt-4-turbo"
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
+time.sleep(0.5)
+st.session_state.messages.append({"role": "system", "content": sys_prompt})
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-if prompt := st.chat_input("What is up?"):
+if prompt := st.chat_input("Ask about the commands executed"):
+    
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -47,4 +57,6 @@ if prompt := st.chat_input("What is up?"):
         )
         response = st.write_stream(stream)
     st.session_state.messages.append({"role": "assistant", "content": response})
+      
+
  
