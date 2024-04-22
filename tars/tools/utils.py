@@ -5,12 +5,10 @@ import requests
 
 
 @tool("GetLocalIp")
-def get_external_ip(ip=None):
+def get_external_ip():
     """Get external ip address or provide one"""
     try:
-        if ip != None:
-            return str(ip)
-        response = requests.get("https://api.ipify.org")
+        response = requests.get("https://api.ipify.org", timeout=15)
         return str(response.text)
     except:
         return None
