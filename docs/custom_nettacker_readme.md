@@ -45,7 +45,7 @@ Engine:
                         select a language ['en', 'tr', 'el', 'fr', 'iw', 'de',
                         'hi', 'ko', 'hy', 'nl', 'vi', 'pt-br', 'zh-cn', 'ps',
                         'it', 'ur', 'fa', 'id', 'es', 'ar', 'ja', 'bn', 'ru']
-  -v, --verbose         verbose mode level (0-5) (default 0)
+  -v, --verbose         verbose mode (boolean)
   --verbose-event       enable verbose event to see state of each thread
   -V, --version         show software version
   -o REPORT_PATH_FILENAME, --output REPORT_PATH_FILENAME

@@ -8,7 +8,6 @@ import subprocess
 @tool("Nettacker")
 def nettacker(
     targets: str,
-    output_format: str = "html",
     graph: str = None,
     profiles: str = None,
     modules: str = None,
@@ -18,9 +17,8 @@ def nettacker(
     user_agent: str = None,
     parallel_module_scan: int = 1,
     retries: int = 3,
-    verbose_mode: int = 0,
-    api: bool = False,
-    api_port: int = 5000,
+    verbose_mode: bool = False,
+    verbose_event: bool = False
 ) -> str:
     """
     Executes an OWASP Nettacker scan and returns the results.
@@ -37,9 +35,8 @@ def nettacker(
     - user_agent (str, optional): Specify a user agent for HTTP requests, or use 'random_user_agent'.
     - parallel_module_scan (int, optional): Number of modules to scan in parallel.
     - retries (int, optional): Number of retries for a failed connection attempt.
-    - verbose_mode (int, optional): Verbosity level (0-5).
-    - api (bool, optional): Flag to start the API service.
-    - api_port (int, optional): Port number for the API service if started.
+    - verbose_mode (boolean, optional): verbose mode (more detailed information/logs)
+    - verbose_event (boolean, optional): enable verbose event to see state of each thread (more detailed information/logs)
 
     Returns:
     - str: The results of the Nettacker scan or an error message.
@@ -48,9 +45,8 @@ def nettacker(
     if not targets:
         raise ValueError("Targets are required for scanning.")
 
-    # Build the command with basic and optional parameters
-    base_command = f"python nettacker.py -i {targets} -o results.{output_format} --verbose {verbose_mode}"
-
+    # build the command with basic and optional parameters
+    base_command = f"nettacker -i {targets} "
     if modules:
         base_command += f" -m {modules}"
     if profiles:
@@ -69,17 +65,18 @@ def nettacker(
         base_command += f" -M {parallel_module_scan}"
     if retries != 3:
         base_command += f" --retries {retries}"
-    if api:
-        base_command += f" --start-api --api-port {api_port}"
+    if verbose_mode:
+        base_command += f" --verbose"
+    if verbose_event:
+        base_command += f" --verbose-event"
 
-    # Execute the command using subprocess
+    # execute the command using subprocess
     process = subprocess.Popen(
         base_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
 
     stdout, stderr = process.communicate()
 
-    # Check for errors
     if process.returncode != 0:
         raise Exception(f"Error executing Nettacker: {stderr.decode('utf-8')}")
 

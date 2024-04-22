@@ -1,8 +1,14 @@
 crewai==0.28.6
 crewai==0.28.6
 crewai-tools==0.1.6
-langchain==0.1.14
-langchain-google-genai==1.0.1
 requests==2.31.0
 duckduckgo_search==5.3.0
 tiktoken==0.5.2
+langchain==0.1.16
+langchain-community==0.0.34
+langchain-core==0.1.45
+langchain-experimental==0.0.57
+langchain-google-genai==1.0.1
+langchain-openai==0.0.5
+langchain-text-splitters==0.0.1
+langsmith==0.1.49
