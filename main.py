@@ -1,10 +1,9 @@
-from crewai import Agent, Task, Crew, Process
 from crewai_tools import tool
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.tools import DuckDuckGoSearchRun
 from subprocess import Popen, PIPE
-
-import py_main.tools as tools
+from crewai import Agent, Task, Crew, Process
+from tools import nmap_tool, search, execute_unix_cmd
 
 llm = ChatGoogleGenerativeAI(
     model="gemini-pro",
@@ -12,82 +11,83 @@ llm = ChatGoogleGenerativeAI(
     temperature=0.5,
 )
 
-
-NPMGOD = Agent(
-    role="UNIX Command Runner",
-    goal="Successfully run UNIX commands in the shell and save the output",
-    backstory="You are an expert UNIX Command Runner that is experienced in UNIX CLI.",
+NmapAgent = Agent(
+    role="Network Scout",
+    goal="Map the digital terrain, identifying open ports and potential security breaches.",
+    backstory="An experienced digital explorer, always on the lookout for network vulnerabilities.",
     verbose=True,
     allow_delegation=False,
-    llm=llm,
-    tools=[tools.execute_unix_cmd],
+    # llm=llm,
+    tools=[nmap_tool],
 )
 
-# Define your agents with roles and goals
-CopyWriter = Agent(
-    role="Security Analyst",
-    goal="Analyze logs produced by various penetration testing tools and identify important information",
-    backstory="You are an expert security analyst that identifies critical security vulnerabilites",
+ResearcherAgent = Agent(
+    role="Cyber Sleuth",
+    goal="Uncover the secrets of network vulnerabilities and how to mend them.",
+    backstory="With a keen eye for detail, you delve into the depths of cyberspace to find answers.",
     verbose=True,
-    allow_delegation=True,
-    llm=llm,
-    tools=[tools.search],
+    allow_delegation=False,
+    # llm=llm,
+    tools=[search],
 )
 
-SEO_Researcher = Agent(
-    role="Security Communications Manager",
-    goal="Take important security insights from security analysts and format them to make them understandable for normal adults",
-    backstory="You are an expert in security communications who helps normal people understand security insights made by professionals",
+UnixCommandRunner = Agent(
+    role="System Navigator",
+    goal="Command the ship of Unix, navigating through the sea of commands to find valuable information.",
+    backstory="A seasoned navigator in the Unix realm, your command line skills are unparalleled.",
     verbose=True,
-    allow_delegation=True,
-    llm=llm,
-    tools=[tools.search],
+    allow_delegation=False,
+    # llm=llm,
+    tools=[execute_unix_cmd],
 )
 
-# Define your agents with roles and goals
-researcher = Agent(
-    role="Penetration Testing Manager",
-    goal="Utilize a penetration testing toolkit to generate useful security analytics",
-    backstory="You're an expert penetration testing manager who helps their customers identify security weaknesses",
+ReportWriter = Agent(
+    role="Archivist",
+    goal="Chronicle the journey of discovery, weaving findings into a narrative with proper citations.",
+    backstory="In the library of digital knowledge, you craft stories from facts and data.",
     verbose=True,
-    allow_delegation=True,
-    llm=llm,
-    tools=[tools.search],
+    allow_delegation=False,
+    # llm=llm,
+    tools=[search],
 )
 
-# Create tasks for your agents
-tasku = Task(
-    description="acquire information on the IP",
-    agent=NPMGOD,
-    expected_output="IP information",
-)
 task1 = Task(
-    description="reseach on crew ai, reference url = https://github.com/joaomdmoura/crewAI",
-    agent=researcher,
-    expected_output="reseach on crew ai",
+    description="Determine the external IP address of the machine",
+    agent=UnixCommandRunner,
+    expected_output="External IP address",
 )
+
 task2 = Task(
-    description=f"Create an article on langchain agents and tools and also give an example and also write a detail summary on the basis of {researcher} response",
-    agent=CopyWriter,
-    expected_output="an article on langchain agents and tools",
+    description="Scan the IP address to find open ports, only scan the most popular ports that can be prone to attacks and some less obvious ports as well. But, DO NOT Scan more then 10 ports.",
+    agent=NmapAgent,
+    expected_output="Open ports and services",
 )
+
 task3 = Task(
-    description=f"give me best tags for the article written by {CopyWriter} Agent",
-    agent=SEO_Researcher,
-    expected_output="best tags",
+    description="Analyze open ports for known vulnerabilities, make sure this process does not take long (optimize it. DO NOT Scan more then 10 ports)",
+    agent=NmapAgent,
+    expected_output="Vulnerabilities list",
 )
 
-# Instantiate your crew with a sequential process
+task4 = Task(
+    description="Research potential fixes for the identified vulnerabilities",
+    agent=ResearcherAgent,
+    expected_output="Solutions and citations",
+)
+
+task5 = Task(
+    description="Compile findings, vulnerabilities, and solutions into a detailed report with citations",
+    agent=ReportWriter,
+    expected_output="Comprehensive report with citations",
+)
+
 crew = Crew(
-    agents=[researcher, CopyWriter, SEO_Researcher],
-    tasks=[task1, task2, task3],
-    verbose=2,  # Crew verbose more will let you know what tasks are being worked on, you can set it to 1 or 2 to different logging levels
-    # Sequential process will have tasks executed one after the other and the outcome of the previous one is passed as extra content into this next.
+    agents=[UnixCommandRunner, NmapAgent, ResearcherAgent, ReportWriter],
+    tasks=[task1, task2, task3, task4, task5],
     process=Process.sequential,
+    memory=True,
 )
 
-npmgod = Crew(agents=[NPMGOD], tasks=[tasku], verbose=2, process=Process.sequential)
-
-# Get your crew to work!
-result = npmgod.kickoff()
+result = crew.kickoff()
+print("\n=====================\n")
 print(result)
