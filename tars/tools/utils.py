@@ -28,8 +28,6 @@ def scan_subdomains(website: str):
         raise Exception("Website does not exist you fat donkey")
 
     cmd = f"nettacker -i {website} -s -m port_scan -t 10 -M 35 -g 20-100"
-    if os.getenv("DEVELOPER_MODE") == True:
-        cmd = f"python3 nettacker.py -i {website} -s -m port_scan -t 10 -M 35 -g 20-100"
 
     shell_tool = ShellTool()
     subdomains = shell_tool.run({"commands": [cmd]})
