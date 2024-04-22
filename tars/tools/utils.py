@@ -1,8 +1,41 @@
 from langchain_community.tools import DuckDuckGoSearchRun
+from langchain_community.tools import ShellTool
 from subprocess import Popen, PIPE
 from crewai_tools import tool
 import subprocess
 import requests
+import platform
+import os
+
+
+def ping(hostname):
+    param = "-n" if platform.system().lower() == "windows" else "-c"
+    command = ["ping", param, "1", hostname]
+    response = subprocess.run(
+        command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+    )
+    return response.returncode == 0
+
+
+@tool("ScanSubdomains")
+def scan_subdomains(website: str):
+    """Run a Nettacker command to scan subdomains of the given website"""
+
+    if website is None:
+        raise ValueError("Website is required")
+
+    if ping(website) == False:
+        raise Exception("Website does not exist you fat donkey")
+
+    cmd = f"nettacker -i {website} -s -m port_scan -t 10 -M 35 -g 20-100"
+    if os.getenv("DEVELOPER_MODE") == True:
+        cmd = f"python3 nettacker.py -i {website} -s -m port_scan -t 10 -M 35 -g 20-100"
+
+    shell_tool = ShellTool()
+    subdomains = shell_tool.run({"commands": [cmd]})
+
+    print(str(subdomains))
+    return str(subdomains)
 
 
 @tool("GetLocalIp")
