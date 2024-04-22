@@ -1,7 +1,7 @@
 from langchain_community.tools import DuckDuckGoSearchRun
-import subprocess
 from subprocess import Popen, PIPE
 from crewai_tools import tool
+import subprocess
 import datetime
 import requests
 import json
