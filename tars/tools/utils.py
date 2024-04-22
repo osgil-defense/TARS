@@ -17,25 +17,6 @@ def ping(hostname):
     return response.returncode == 0
 
 
-@tool("ScanSubdomains")
-def scan_subdomains(website: str):
-    """Run a Nettacker command to scan subdomains of the given website"""
-
-    if website is None:
-        raise ValueError("Website is required")
-
-    if ping(website) == False:
-        raise Exception("Website does not exist you fat donkey")
-
-    cmd = f"nettacker -i {website} -s -m port_scan -t 10 -M 35 -g 20-100"
-
-    shell_tool = ShellTool()
-    subdomains = shell_tool.run({"commands": [cmd]})
-
-    print(str(subdomains))
-    return str(subdomains)
-
-
 @tool("GetLocalIp")
 def get_external_ip():
     """Get external ip address or provide one"""
