@@ -377,10 +377,17 @@ def nettacker_user_application_config():
 ## Modules aka 'Methods'
 
 OWASP Nettacker Modules can be of type **Scan** (scan for something), **Vuln** (check for some vulnerability) and **Brute** (Brute force) 
-- [Scan Modules](#scan-modules)
-- [Ports Scanned by Nettacker](#ports-scanned-by-nettacker)
-- [Vuln Modules](#vuln-modules)
-- [Brute Modules](#brute-modules)
+- [OWASP Nettacker](#owasp-nettacker)
+  - [About](#about)
+  - [Nettacker 101](#nettacker-101)
+  - [CLI Help/Options Output](#cli-helpoptions-output)
+  - [Command Examples](#command-examples)
+  - [Modules aka 'Methods'](#modules-aka-methods)
+    - [Scan Modules](#scan-modules)
+    - [Ports Scanned by Nettacker](#ports-scanned-by-nettacker)
+    - [Vuln Modules](#vuln-modules)
+    - [Brute Modules](#brute-modules)
+  - [Example Commands](#example-commands)
 
 ### Scan Modules
 
@@ -548,3 +555,82 @@ If no extra users/passwords parameters are specified the following default usern
 * '**telnet_brute**' - try to brute force via telnet (port23) (expects "login" and "Password" prompt)
 * '**wp_xmlrpc_brute**' - try to brute force Wordpress users using XMLRPC and wp.getUsersBlogs method
 
+## Example Commands
+
+Get the help section and see all the options for Nettacker:
+
+```bash
+nettacker -h
+```
+
+Run ALL Nettacker modules and save the report to a json file which can also be a text file if set (switch the .json to a .txt):
+
+```bash
+nettacker -i http://localhost:3000/ -m all -o "$(pwd)/result.json"
+```
+
+Run all profiles, in verbose mode, and save the report to a text file which can also be a json or csv file:
+
+```bash
+nettacker -i https://notifycyber.com/ --profile all --verbose-event --verbose -o "$(pwd)/result.txt"
+```
+
+Get a list of all modules with details:
+
+```bash
+nettacker --show-all-modules
+```
+
+Read targets from a list by reading targets from a provided list, enabling focused scanning on specific targets for efficient reconnaissance:
+
+```bash
+nettacker -l targets.txt -m all -x port_scan -g 20-100 -t 5 -u root -p 123456,654321,123123
+```
+
+Search for and try to find clickjacking vulnerabilities:
+
+```bash
+nettacker -i https://geeksforgeeks.org -m clickjacking_vuln
+```
+
+Scan subdomains for a target:
+
+```bash
+nettacker -i geeksforgeeks.org -s -m port_scan -t 10 -M 35 -g 20-100
+```
+
+Automatically scan the IP range by retrieving the range information from the online RIPE database:
+
+```bash
+nettacker -i owasp.org -s -r -m port_scan -t 10 -M 35 -g 20-100
+```
+
+Reading target websites from a text file, or just listed with a comma:
+
+```bash
+# example 1
+nettacker -l targets.txt -m all -x port_scan -g 20-100 -t 5 -u root -p 123456,654321,123123
+
+# example 2
+nettacker -i 192.168.1.1,192.168.1.2-192.168.1.10,127.0.0.1,owasp.org,192.168.2.1/24 -m port_scan -g 20-100 -t 10
+```
+
+You can utilize Whatcms scanning but it requires an API key. You can get the API [HERE](https://whatcms.org/API). But, here is a simple example of how you can use a Whatcms scan using Nettacker:
+
+```bash
+nettacker -i eng.uber.com -m whatcms_scan --method-args whatcms_api_key=XXXX
+```
+
+Scan subdomains for a target:
+
+```bash
+nettacker -i owasp.org -s -m port_scan -t 10 -M 35 -g 20-100
+```
+
+Scan and check if the CVE-2020-5902 expliot is possible on your target:
+
+```bash
+nettacker -i <CIDR/IP/Domain> -m f5_cve_2020_5902
+nettacker -l <List of IP/CIDR/Domain> -m f5_cve_2020_5902
+nettacker -i <CIDR/IP/Domain> -m f5_cve_2020_5902 -s
+```
