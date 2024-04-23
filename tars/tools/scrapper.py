@@ -1,5 +1,9 @@
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
 from urllib.parse import urlparse, urljoin
+from selenium import webdriver
 from bs4 import BeautifulSoup
+from crewai_tools import tool
 import validators
 import requests
 import asyncio
@@ -9,11 +13,24 @@ import json
 import sys
 import re
 import os
+import signal
+import string
+import time
+import json
+import re
 
-import util
+
+class TimeoutException(Exception):
+    pass
 
 
-extensions = util.read_json(os.path.join(os.getcwd(), "assets/extensions.json"))
+def read_json(path):
+    with open(str(path)) as file:
+        content = json.load(file)
+    return content
+
+
+extensions = read_json(os.path.join(os.getcwd(), "assets/extensions.json"))
 
 
 async def fetch(session, url):
@@ -144,7 +161,56 @@ def has_invalid_ext(extensions, link):
     return True
 
 
-# NOTE: main function, all other functions are used here
+def remove_html(content):
+    oline = content
+    soup = BeautifulSoup(oline, "html.parser")
+    for data in soup(["style", "script"]):
+        data.decompose()
+    tmp = " ".join(soup.stripped_strings)
+    tmp = "".join(filter(lambda x: x in set(string.printable), tmp))
+    tmp = re.sub(" +", " ", tmp)
+    return tmp
+
+
+def timeout(seconds=10, error_message="function call timed out"):
+    def decorator(func):
+        def _handle_timeout(signum, frame):
+            raise TimeoutException(error_message)
+
+        def wrapper(*args, **kwargs):
+            signal.signal(signal.SIGALRM, _handle_timeout)
+            signal.alarm(seconds)
+            try:
+                result = func(*args, **kwargs)
+            finally:
+                signal.alarm(0)  # disable the alarm
+            return result
+
+        return wrapper
+
+    return decorator
+
+
+@timeout(seconds=60)
+def scrape_page(url, time_delay=10):
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")
+
+    driver = webdriver.Chrome(
+        service=Service(ChromeDriverManager().install()), options=options
+    )
+
+    try:
+        driver.get(url)
+
+        # wait for page to load
+        time.sleep(time_delay)
+
+        return driver.page_source
+    finally:
+        driver.quit()
+
+
 def extract_unique_links_from_root_url(url):
     if validators.url(url) == False:
         raise Exception(f"url {url} is not a valid URL")
@@ -165,3 +231,38 @@ def extract_unique_links_from_root_url(url):
         link_path.append(link)
 
     return list(set(link_path + link_content))
+
+
+@tool("ScrapeSinglePage")
+def scrape_page(url: str, time_delay: int = 10) -> str:
+    """
+    Scrape the contents of the given URL and return all the text (with the HTML+CSS removed).
+
+    Parameters:
+    - url (str): The URL to scrape.
+    - time_delay (int): The number of seconds the scrapper should wait for the page to fully load, the default is 10 seconds
+
+    Returns:
+    - str: All text from the page with the HTML+CSS removed
+    """
+
+    if not validators.url(url):
+        raise Exception(f"url {url} is not a valid URL")
+
+    page_source = clean_html(scrape_page(url, time_delay))
+
+    return page_source
+
+
+@tool("CrawlWebsiteURLs")
+def crawl_website_urls(url: str) -> str:
+    """
+    Given a root URL, extract all the unique sub-URLs by crawling the entire site.
+
+    Returns:
+    - str: A JSON formatted string containing a list of unique URLs.
+    """
+
+    output = extract_unique_links_from_root_url(url)
+
+    return json.dumps(output, indent=4)

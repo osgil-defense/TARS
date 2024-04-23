@@ -4,7 +4,10 @@ from crewai_tools import tool
 import subprocess
 import os
 
-import util
+
+def load_file(file_path):
+    with open(file_path, "r") as file:
+        return file.read()
 
 
 @tool("NettackerDocs")
@@ -16,7 +19,7 @@ def get_nettacker_docs() -> str:
     - str: Latest Nettacker documentation with examples
     """
     path = os.path.join(os.getcwd(), "assets/nettacker_docs.md")
-    text = util.load_file(path)
+    text = load_file(path)
     return text
 
 
