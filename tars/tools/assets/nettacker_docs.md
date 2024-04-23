@@ -1,5 +1,9 @@
 # OWASP Nettacker
 
+## Updated
+
+April 22, 2024
+
 ## About
 
 OWASP Nettacker project is created to automate information gathering, vulnerability scanning and eventually generating a report for networks, including services, bugs, vulnerabilities, misconfigurations, and other information. This software will utilize TCP SYN, ACK, ICMP, and many other protocols in order to detect and bypass Firewall/IDS/IPS devices. By leveraging a unique method in OWASP Nettacker for discovering protected services and devices such as SCADA. It would make a competitive edge compared to other scanner making it one of the bests. Learn more about Nettacker by checking out the [OWASP Page](https://owasp.org/www-project-nettacker/), [Wiki](https://github.com/OWASP/Nettacker/wiki), the project's [GitHub repo](https://github.com/OWASP/Nettacker).

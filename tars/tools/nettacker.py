@@ -1,11 +1,29 @@
 from langchain_community.tools import DuckDuckGoSearchRun
-from langchain_community.tools import ShellTool
 from subprocess import Popen, PIPE
 from crewai_tools import tool
 import subprocess
+import os
 
 
-@tool("Nettacker")
+def load_file(file_path):
+    with open(file_path, "r") as file:
+        return file.read()
+
+
+# @tool("NettackerDocs")
+def get_nettacker_docs() -> str:
+    """
+    Grab the entire Nettacker documentation
+
+    Returns:
+    - str: Latest Nettacker documentation with examples
+    """
+    path = os.path.join(os.getcwd(), "assets/nettacker_docs.md")
+    text = load_file(path)
+    return text
+
+
+# @tool("Nettacker")
 def nettacker(
     targets: str,
     profiles: str = None,
@@ -17,7 +35,7 @@ def nettacker(
     parallel_module_scan: int = 1,
     retries: int = 3,
     verbose_mode: bool = False,
-    verbose_event: bool = False
+    verbose_event: bool = False,
 ) -> str:
     """
     Executes an OWASP Nettacker scan and returns the results.
@@ -69,6 +87,61 @@ def nettacker(
     # execute the command using subprocess
     process = subprocess.Popen(
         base_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+
+    stdout, stderr = process.communicate()
+
+    if process.returncode != 0:
+        raise Exception(f"Error executing Nettacker: {stderr.decode('utf-8')}")
+
+    return stdout.decode("utf-8")
+
+
+# @tool("NettackerRunAllProfiles")
+def nettacker_profile_all(target: str) -> str:
+    """
+    Run all the profiles in Nettacker where each profile is a set of modules/tools
+
+    Parameters:
+    - targets (str): The IP address, hostname, or network to scan, separated by commas.
+
+    Returns:
+    - str: The results of the Nettacker scan or an error message.
+    """
+
+    # execute the command using subprocess
+    process = subprocess.Popen(
+        f"nettacker -i {target} --profile all --verbose-event --verbose",
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+    stdout, stderr = process.communicate()
+
+    if process.returncode != 0:
+        raise Exception(f"Error executing Nettacker: {stderr.decode('utf-8')}")
+
+    return stdout.decode("utf-8")
+
+# @tool("NettackerRunAllModules")
+def nettacker_module_all(target: str) -> str:
+    """
+    Run all modules in Nettacker where each module is a type of scan/tool
+
+    Parameters:
+    - targets (str): The IP address, hostname, or network to scan, separated by commas.
+
+    Returns:
+    - str: The results of the Nettacker scan or an error message.
+    """
+
+    # execute the command using subprocess
+    process = subprocess.Popen(
+        f"nettacker -i {target} -m all --verbose-event --verbose",
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
 
     stdout, stderr = process.communicate()
