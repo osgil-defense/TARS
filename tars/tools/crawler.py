@@ -5,17 +5,15 @@ import requests
 import asyncio
 import aiohttp
 import time
+import json
 import sys
 import re
 import os
 
 import util
 
-########################################################################
 
 extensions = util.read_json(os.path.join(os.getcwd(), "assets/extensions.json"))
-
-########################################################################
 
 
 async def fetch(session, url):
@@ -31,7 +29,7 @@ async def fetch(session, url):
             else:
                 return None, None
     except Exception as e:
-        # print(f"Error fetching {url}: {e}")
+        print(f"Error fetching {url}: {e}")
         return None, None
 
 
@@ -72,9 +70,6 @@ async def collect_links(starting_url):
             session, starting_url, domain_name, visited_urls, found_links
         )
     return found_links
-
-
-########################################################################
 
 
 def remove_consecutive_empty_strings(strings):
@@ -120,9 +115,6 @@ def clean_html(content):
     return text
 
 
-########################################################################
-
-
 def http_get(
     url,
     headers={
@@ -152,37 +144,24 @@ def has_invalid_ext(extensions, link):
     return True
 
 
-########################################################################
+# NOTE: main function, all other functions are used here
+def extract_unique_links_from_root_url(url):
+    if validators.url(url) == False:
+        raise Exception(f"url {url} is not a valid URL")
 
-if __name__ == "__main__":
-    if len(sys.argv) <= 1:
-        # print("ERROR : please provide a URL as an argument!")
-        sys.exit(0)
+    parsed_url = urlparse(url)
+    root_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
 
-    start_time = time.time()
-
-    links = asyncio.run(collect_links(sys.argv[1]))
+    links = asyncio.run(collect_links(root_url))
     links = list(set(links))
 
-    script_directory = os.path.dirname(os.path.realpath(__file__))
-    base_directory = os.path.join(script_directory, "websites")
-
-    skips = []
-    real = []
+    link_path = []
+    link_content = []
     for link in links:
+        print(f"Found URL: {url}")
         if not has_invalid_ext(extensions, link):
-            skips.append(link)
+            link_content.append(link)
             continue
-        real.append(link)
+        link_path.append(link)
 
-    runtime = time.time() - start_time
-
-    # print results
-    print("SKIPPED:")
-    for l in skips:
-        print(f"   {l}")
-    print("\nURLS:")
-    for l in real:
-        print(f"   {l}")
-    print("\nRUNTIME:")
-    print(f"   {runtime} seconds")
+    return list(set(link_path + link_content))
