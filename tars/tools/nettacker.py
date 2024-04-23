@@ -8,7 +8,6 @@ import subprocess
 @tool("Nettacker")
 def nettacker(
     targets: str,
-    graph: str = None,
     profiles: str = None,
     modules: str = None,
     usernames: str = None,
@@ -26,7 +25,6 @@ def nettacker(
     Parameters:
     - targets (str): The IP address, hostname, or network to scan, separated by commas.
     - output_format (str, optional): Format of the output file ('txt', 'csv', 'html', 'json'), default is 'html'.
-    - graph (str, optional): Specifies the type of graph to generate ('d3_tree_v1_graph', 'd3_tree_v2_graph'), default is None.
     - profiles (str, optional): Predefined set of modules (e.g., 'all', 'vuln', 'cve2021').
     - modules (str, optional): Specific module(s) to run, defaults to None which will use Nettacker's default module settings.
     - usernames (str, optional): List of usernames to use during the scan, separated by commas.
@@ -51,8 +49,6 @@ def nettacker(
         base_command += f" -m {modules}"
     if profiles:
         base_command += f" --profile {profiles}"
-    if graph:
-        base_command += f" --graph {graph}"
     if usernames:
         base_command += f" -u {usernames}"
     if passwords:
