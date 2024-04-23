@@ -234,7 +234,7 @@ def extract_unique_links_from_root_url(url):
 
 
 @tool("ScrapeSinglePage")
-def scrape_page(url: str, time_delay: int = 10) -> str:
+def scrape_link(url: str, time_delay: int = 10) -> str:
     """
     Scrape the contents of the given URL and return all the text (with the HTML+CSS removed).
 
