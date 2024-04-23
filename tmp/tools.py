@@ -173,6 +173,7 @@ def search(query: str):
 
 #     return stdout.decode("utf-8")
 
+
 # Langchain Implementation of unix command execution
 @tool("ExecuteUnixCmd")
 def execute_unix_cmd(commands: list[str]) -> str:

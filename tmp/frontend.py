@@ -6,26 +6,33 @@ import time
 
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 st.set_page_config(page_title="MEDUSA DEMO")
-st.title('MEDUSA DEMO')
+st.title("MEDUSA DEMO")
 expect = ""
 pingus = False
 sys_prompt = "Pending..."
 
-os.environ['WEBSITE'] = st.sidebar.text_input('Enter website to test here')
+os.environ["WEBSITE"] = st.sidebar.text_input("Enter website to test here")
 
 st.image(image="bingus.webp")
-with st.form('my_form'):
-    text = st.text_area('ASK THE TOOL TO RUN AN ATTACK!:', 'Enter text here')
-    submitted = st.form_submit_button('Submit')  # This will return True when the form is submitted
+with st.form("my_form"):
+    text = st.text_area("ASK THE TOOL TO RUN AN ATTACK!:", "Enter text here")
+    submitted = st.form_submit_button(
+        "Submit"
+    )  # This will return True when the form is submitted
     if submitted:  # Only run the following code if the form is submitted
-        if not os.environ['WEBSITE']:
-            st.warning('ENTER A WEBSITE BEFORE ATTEMPTING!', icon='⚠')
+        if not os.environ["WEBSITE"]:
+            st.warning("ENTER A WEBSITE BEFORE ATTEMPTING!", icon="⚠")
         else:
             pingus = True
             expect = main.npmgod.kickoff()
-            st.warning("PROCESS HAS FINISHED:" + expect)  # Now this only runs when the form is submitted
+            st.warning(
+                "PROCESS HAS FINISHED:" + expect
+            )  # Now this only runs when the form is submitted
             print(os.environ["WEBSITE"])
-            sys_prompt = "The following network log output will be interpreted by a helpful cybersecurity analyst:\n " + expect
+            sys_prompt = (
+                "The following network log output will be interpreted by a helpful cybersecurity analyst:\n "
+                + expect
+            )
 
 
 if "openai_model" not in st.session_state:
@@ -41,7 +48,7 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 if prompt := st.chat_input("Ask about the commands executed"):
-    
+
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -57,6 +64,3 @@ if prompt := st.chat_input("Ask about the commands executed"):
         )
         response = st.write_stream(stream)
     st.session_state.messages.append({"role": "assistant", "content": response})
-      
-
- 

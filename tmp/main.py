@@ -11,7 +11,7 @@ llm = ChatGoogleGenerativeAI(
     model="gemini-pro",
     verbose=True,
     temperature=0.5,
-    google_api_key=os.environ["GOOGLE_API_KEY"]
+    google_api_key=os.environ["GOOGLE_API_KEY"],
 )
 
 
