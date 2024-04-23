@@ -4,13 +4,10 @@ from crewai_tools import tool
 import subprocess
 import os
 
-
-def load_file(file_path):
-    with open(file_path, "r") as file:
-        return file.read()
+import util
 
 
-# @tool("NettackerDocs")
+@tool("NettackerDocs")
 def get_nettacker_docs() -> str:
     """
     Grab the entire Nettacker documentation
@@ -19,11 +16,11 @@ def get_nettacker_docs() -> str:
     - str: Latest Nettacker documentation with examples
     """
     path = os.path.join(os.getcwd(), "assets/nettacker_docs.md")
-    text = load_file(path)
+    text = util.load_file(path)
     return text
 
 
-# @tool("Nettacker")
+@tool("Nettacker")
 def nettacker(
     targets: str,
     profiles: str = None,
@@ -97,7 +94,7 @@ def nettacker(
     return stdout.decode("utf-8")
 
 
-# @tool("NettackerRunAllProfiles")
+@tool("NettackerRunAllProfiles")
 def nettacker_profile_all(target: str) -> str:
     """
     Run all the profiles in Nettacker where each profile is a set of modules/tools
@@ -124,7 +121,8 @@ def nettacker_profile_all(target: str) -> str:
 
     return stdout.decode("utf-8")
 
-# @tool("NettackerRunAllModules")
+
+@tool("NettackerRunAllModules")
 def nettacker_module_all(target: str) -> str:
     """
     Run all modules in Nettacker where each module is a type of scan/tool
