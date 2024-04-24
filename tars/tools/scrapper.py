@@ -18,7 +18,9 @@ def read_json(path):
     return content
 
 
-extensions = read_json(os.path.join(os.getcwd(), "assets/extensions.json"))
+extensions = read_json(
+    os.path.join(str("/".join(__file__.split("/")[:-1])), "assets/extensions.json")
+)
 
 
 async def fetch(session, url):

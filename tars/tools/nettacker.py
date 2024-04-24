@@ -10,6 +10,11 @@ def load_file(file_path):
         return file.read()
 
 
+NETTACKER_DOCS = load_file(
+    os.path.join(str("/".join(__file__.split("/")[:-1])), "assets/nettacker_docs.md")
+)
+
+
 @tool("NettackerDocs")
 def get_nettacker_docs() -> str:
     """
@@ -18,9 +23,7 @@ def get_nettacker_docs() -> str:
     Returns:
     - str: Latest Nettacker documentation with examples
     """
-    path = os.path.join(os.getcwd(), "assets/nettacker_docs.md")
-    text = load_file(path)
-    return text
+    return NETTACKER_DOCS
 
 
 @tool("Nettacker")
@@ -109,9 +112,15 @@ def nettacker_profile_all(target: str) -> str:
     - str: The results of the Nettacker scan or an error message.
     """
 
+    # TODO: make this into a function parameter
+    verbose_mode = False
+    cmd = f"nettacker -i {target} --profile all"
+    if verbose_mode:
+        cmd += " --verbose-event --verbose"
+
     # execute the command using subprocess
     process = subprocess.Popen(
-        f"nettacker -i {target} --profile all --verbose-event --verbose",
+        cmd,
         shell=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -137,9 +146,15 @@ def nettacker_module_all(target: str) -> str:
     - str: The results of the Nettacker scan or an error message.
     """
 
+    # TODO: make this into a function parameter
+    verbose_mode = False
+    cmd = f"nettacker -i {target} -m all"
+    if verbose_mode:
+        cmd += " --verbose-event --verbose"
+
     # execute the command using subprocess
     process = subprocess.Popen(
-        f"nettacker -i {target} -m all --verbose-event --verbose",
+        cmd,
         shell=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

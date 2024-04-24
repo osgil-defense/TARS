@@ -1,93 +1,82 @@
 from crewai_tools import tool
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.tools import DuckDuckGoSearchRun
+from langchain_openai import ChatOpenAI
 from subprocess import Popen, PIPE
 from crewai import Agent, Task, Crew, Process
-from tools import nmap_tool, search, execute_unix_cmd
+import sys
+import os
 
-llm = ChatGoogleGenerativeAI(
+sys.path.append(os.path.join(os.getcwd(), "tools"))
+from tools import nettacker, network, scrapper
+
+################################################
+
+google_llm = ChatGoogleGenerativeAI(
     model="gemini-pro",
     verbose=True,
     temperature=0.5,
 )
 
-NmapAgent = Agent(
-    role="Network Scout",
-    goal="Map the digital terrain, identifying open ports and potential security breaches.",
-    backstory="An experienced digital explorer, always on the lookout for network vulnerabilities.",
-    verbose=True,
-    allow_delegation=False,
-    # llm=llm,
-    tools=[nmap_tool],
-)
+openai_llm = ChatOpenAI(model="gpt-4-turbo-2024-04-09")
 
-ResearcherAgent = Agent(
-    role="Cyber Sleuth",
-    goal="Uncover the secrets of network vulnerabilities and how to mend them.",
-    backstory="With a keen eye for detail, you delve into the depths of cyberspace to find answers.",
-    verbose=True,
-    allow_delegation=False,
-    # llm=llm,
-    tools=[search],
-)
+llm = openai_llm
 
-UnixCommandRunner = Agent(
-    role="System Navigator",
-    goal="Command the ship of Unix, navigating through the sea of commands to find valuable information.",
-    backstory="A seasoned navigator in the Unix realm, your command line skills are unparalleled.",
-    verbose=True,
-    allow_delegation=False,
-    # llm=llm,
-    tools=[execute_unix_cmd],
-)
+################################################
 
-ReportWriter = Agent(
-    role="Archivist",
-    goal="Chronicle the journey of discovery, weaving findings into a narrative with proper citations.",
-    backstory="In the library of digital knowledge, you craft stories from facts and data.",
+# NettackerAgent = Agent(
+#     role="Nettacker Tool Expert",
+#     goal="Deep dive into a target and find as many vulnerabilities in that target as possible just by using the OWASP's Nettacker CLI tool",
+#     backstory="""
+# You are a professional, senior level, penetration tester. You are an expert in the OWASP's Nettacker CLI tool, which is a modular and open-source security scanner that facilitates automated penetration testing through its command-line interface (CLI), offering a wide range of options to detect vulnerabilities in servers, web applications, and network infrastructures.
+# """,
+#     verbose=True,
+#     allow_delegation=False,
+#     llm=llm,
+#     tools=[
+#         nettacker.get_nettacker_docs,
+#         nettacker.nettacker,
+#         nettacker.nettacker_profile_all,
+#         nettacker.nettacker_module_all
+#     ],
+# )
+# task1 = Task(
+#     description="Find all the vulnerabilities for the followign website: https://notifycyber.com/",
+#     agent=NettackerAgent,
+#     expected_output="A report of all the vulnerabilities found using Nettacker",
+# )
+
+NettackerAgent = Agent(
+    role="Nettacker Tool Expert",
+    goal="Identify and report vulnerabilities using OWASP's Nettacker CLI tool",
+    backstory="""
+You are a seasoned penetration tester with expertise in the OWASP Nettacker CLI tool. Your extensive experience includes identifying vulnerabilities in diverse network infrastructures and web applications. You've contributed to cybersecurity by uncovering critical security gaps in high-profile systems, enhancing the robustness of network defenses.
+""",
     verbose=True,
     allow_delegation=False,
-    # llm=llm,
-    tools=[search],
+    llm=llm,
+    tools=[
+        nettacker.get_nettacker_docs,
+        nettacker.nettacker,
+        nettacker.nettacker_profile_all,
+        nettacker.nettacker_module_all,
+    ],
 )
 
 task1 = Task(
-    description="Determine the external IP address of the machine",
-    agent=UnixCommandRunner,
-    expected_output="External IP address",
-)
-
-task2 = Task(
-    description="Scan the IP address to find open ports, only scan the most popular ports that can be prone to attacks and some less obvious ports as well. But, DO NOT Scan more then 10 ports.",
-    agent=NmapAgent,
-    expected_output="Open ports and services",
-)
-
-task3 = Task(
-    description="Analyze open ports for known vulnerabilities, make sure this process does not take long (optimize it. DO NOT Scan more then 10 ports)",
-    agent=NmapAgent,
-    expected_output="Vulnerabilities list",
-)
-
-task4 = Task(
-    description="Research potential fixes for the identified vulnerabilities",
-    agent=ResearcherAgent,
-    expected_output="Solutions and citations",
-)
-
-task5 = Task(
-    description="Compile findings, vulnerabilities, and solutions into a detailed report with citations",
-    agent=ReportWriter,
-    expected_output="Comprehensive report with citations",
+    description="Perform a vulnerability assessment for the website: https://notifycyber.com/",
+    agent=NettackerAgent,
+    expected_output="A detailed report outlining all vulnerabilities detected by Nettacker",
 )
 
 crew = Crew(
-    agents=[UnixCommandRunner, NmapAgent, ResearcherAgent, ReportWriter],
-    tasks=[task1, task2, task3, task4, task5],
+    agents=[NettackerAgent],
+    tasks=[task1],
     process=Process.sequential,
     memory=True,
 )
 
 result = crew.kickoff()
+
 print("\n=====================\n")
 print(result)
