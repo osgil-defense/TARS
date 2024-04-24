@@ -8,10 +8,10 @@ import time
 import sys
 import os
 
-sys.path.append(os.path.join(os.getcwd(), "tools"))
-from tools import nettacker #, network, scrapper
+sys.path.append(os.path.join(str("/".join(__file__.split("/")[:-1])), "tools"))
+from tools import nettacker  # , network, scrapper
 
-################################################
+######################################################################
 
 google_llm = ChatGoogleGenerativeAI(
     model="gemini-pro",
@@ -23,29 +23,8 @@ openai_llm = ChatOpenAI(model="gpt-4-turbo-2024-04-09")
 
 llm = openai_llm
 
-################################################
+######################################################################
 
-# NettackerAgent = Agent(
-#     role="Nettacker Tool Expert",
-#     goal="Deep dive into a target and find as many vulnerabilities in that target as possible just by using the OWASP's Nettacker CLI tool",
-#     backstory="""
-# You are a professional, senior level, penetration tester. You are an expert in the OWASP's Nettacker CLI tool, which is a modular and open-source security scanner that facilitates automated penetration testing through its command-line interface (CLI), offering a wide range of options to detect vulnerabilities in servers, web applications, and network infrastructures.
-# """,
-#     verbose=True,
-#     allow_delegation=False,
-#     llm=llm,
-#     tools=[
-#         nettacker.get_nettacker_docs,
-#         nettacker.nettacker,
-#         nettacker.nettacker_profile_all,
-#         nettacker.nettacker_module_all
-#     ],
-# )
-# task1 = Task(
-#     description="Find all the vulnerabilities for the followign website: https://notifycyber.com/",
-#     agent=NettackerAgent,
-#     expected_output="A report of all the vulnerabilities found using Nettacker",
-# )
 
 NettackerAgent = Agent(
     role="Nettacker Tool Expert",
