@@ -4,11 +4,12 @@ from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_openai import ChatOpenAI
 from subprocess import Popen, PIPE
 from crewai import Agent, Task, Crew, Process
+import time
 import sys
 import os
 
 sys.path.append(os.path.join(os.getcwd(), "tools"))
-from tools import nettacker, network, scrapper
+from tools import nettacker #, network, scrapper
 
 ################################################
 
@@ -66,7 +67,9 @@ You are a seasoned penetration tester with expertise in the OWASP Nettacker CLI 
 task1 = Task(
     description="Perform a vulnerability assessment for the website: https://notifycyber.com/",
     agent=NettackerAgent,
-    expected_output="A detailed report outlining all vulnerabilities detected by Nettacker",
+    expected_output="""
+A detailed report summarizing your key findings during your penetration testing of the website. Include details about what vulnerabilities you found, their severity, as well as ways those vulnerabilities could get patched/fixed.
+""",
 )
 
 crew = Crew(
@@ -76,7 +79,12 @@ crew = Crew(
     memory=True,
 )
 
+start_time = time.time()
+
 result = crew.kickoff()
 
-print("\n=====================\n")
+runtime = time.time() - start_time
+
+print("\n=====================[REPORT]=====================\n")
 print(result)
+print(f"\nRUNTIME: {runtime} seconds")
