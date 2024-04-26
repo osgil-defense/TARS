@@ -21,7 +21,6 @@ classification_template = PromptTemplate.from_template(
 
 classification_chain = classification_template | ChatOpenAI()
 
-classification = classification_chain.invoke({ "question": str(input("PROMPT: ")) })
+classification = classification_chain.invoke({"question": str(input("PROMPT: "))})
 
 print(classification.content)
-
