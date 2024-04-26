@@ -158,11 +158,14 @@ def timeout(seconds=10, error_message="function call timed out"):
 
 
 @timeout(seconds=60)
-def scrape_html(url, headless=True, time_delay=10):
+def scrape_html(url, time_delay=10):
     options = webdriver.ChromeOptions()
-    if headless:
-        # run Chrome in headless mode
-        options.add_argument("--headless")
+
+    # NOTE: this was added to work in a container
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--headless')
+    options.add_argument('--disable-gpu')
 
     driver = webdriver.Chrome(
         service=Service(ChromeDriverManager().install()), options=options
@@ -188,8 +191,9 @@ def tokens_counter(model_name: str, string: str) -> int:
 
 ################################################################################################################
 
+
 @tool("ScrapeWebsite")
-def scrape_website(url: str, token_limit: int = 1096, model: str = "gpt-4") -> str:
+def scrape_website(url: str, token_limit: int = 4096, model: str = "gpt-4") -> str:
     """
     Scrape content from the specified URL, remove HTML tags, and limit the output based on token count.
 
