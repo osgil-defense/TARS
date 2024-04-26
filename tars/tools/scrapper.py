@@ -4,12 +4,21 @@ from crewai_tools import tool
 import validators
 import asyncio
 import aiohttp
-import json
-import re
-import os
 import string
 import json
+import os
+import signal
+import time
+import json
 import re
+
+# 3rd party packages
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
+from selenium import webdriver
+import tiktoken
+
+################################################################################################################
 
 
 def read_json(path):
@@ -109,6 +118,94 @@ def extract_unique_links_from_root_url(url):
         link_path.append(link)
 
     return list(set(link_path + link_content))
+
+
+################################################################################################################
+
+
+def remove_html(content):
+    oline = content
+    soup = BeautifulSoup(oline, "html.parser")
+    for data in soup(["style", "script"]):
+        data.decompose()
+    tmp = " ".join(soup.stripped_strings)
+    tmp = "".join(filter(lambda x: x in set(string.printable), tmp))
+    tmp = re.sub(" +", " ", tmp)
+    return tmp
+
+
+class TimeoutException(Exception):
+    pass
+
+
+def timeout(seconds=10, error_message="function call timed out"):
+    def decorator(func):
+        def _handle_timeout(signum, frame):
+            raise TimeoutException(error_message)
+
+        def wrapper(*args, **kwargs):
+            signal.signal(signal.SIGALRM, _handle_timeout)
+            signal.alarm(seconds)
+            try:
+                result = func(*args, **kwargs)
+            finally:
+                signal.alarm(0)  # disable the alarm
+            return result
+
+        return wrapper
+
+    return decorator
+
+
+@timeout(seconds=60)
+def scrape_html(url, headless=True, time_delay=10):
+    options = webdriver.ChromeOptions()
+    if headless:
+        # run Chrome in headless mode
+        options.add_argument("--headless")
+
+    driver = webdriver.Chrome(
+        service=Service(ChromeDriverManager().install()), options=options
+    )
+
+    try:
+        driver.get(url)
+
+        # wait for page to load
+        time.sleep(time_delay)
+
+        return driver.page_source
+    finally:
+        driver.quit()
+
+
+def tokens_counter(model_name: str, string: str) -> int:
+    encoding_name = tiktoken.encoding_for_model(model_name)
+    encoding = tiktoken.get_encoding(encoding_name.name)
+    num_tokens = len(encoding.encode(string))
+    return num_tokens
+
+
+################################################################################################################
+
+@tool("ScrapeWebsite")
+def scrape_website(url: str, token_limit: int = 1096, model: str = "gpt-4") -> str:
+    """
+    Scrape content from the specified URL, remove HTML tags, and limit the output based on token count.
+
+    Parameters:
+    - url (str): The URL of the website to scrape.
+    - token_limit (int): The maximum number of tokens allowed in the output. Default is 1096.
+    - model (str): The model used for counting tokens. Default is "gpt-4".
+
+    Returns:
+    - str: The scraped website content, cleaned of HTML and truncated to the token limit if necessary.
+    """
+    content = remove_html(scrape_html(url))
+    tokens = tokens_counter(model, content)
+    if tokens > token_limit:
+        return content[:token_limit]
+    return content
 
 
 @tool("CrawlWebsiteURLs")
