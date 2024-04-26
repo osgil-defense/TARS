@@ -18,7 +18,7 @@ search_tool = SerperDevTool()
 web_rag_tool = WebsiteSearchTool()
 
 sys.path.append(os.path.join(str("/".join(__file__.split("/")[:-1])), "tools"))
-from tools import nettacker, network, scrapper, search
+from tools import nettacker, helpers, scrapper, search
 
 NettackerAgent = Agent(
     role="Nettacker Tool Expert",
@@ -59,44 +59,108 @@ WriterAgent = Agent(
     backstory="A skilled Report Writer with a passion for writing the best Reports given the content/research presented to them",
     verbose=True,
     allow_delegation=False,
+    llm=ChatOpenAI(model="gpt-4-turbo-2024-04-09"),
+    tools=[
+        file_tool,
+        helpers.current_utc_timestamp
+    ],
+)
+
+MakeMarkDownAgent = Agent(
+    role="Markdown Converter",
+    goal="Convert plain text into well-formatted Markdown, ensuring clean and professional documentation style.",
+    backstory=(
+        "As a Markdown conversion expert, you have a knack for transforming plain text into beautifully formatted Markdown. "
+        "Your skill goes beyond mere conversion; you elevate plain text into an art form, creating Markdown that is not only "
+        "functional but also aesthetically pleasing. You pride yourself on your ability to present complex information in an "
+        "organized and engaging manner."
+    ),
+    verbose=True,
+    allow_delegation=False,
     llm=ChatGoogleGenerativeAI(
         model="gemini-pro",
         verbose=True,
-        temperature=0.5,
+        temperature=0.25
     ),
     tools=[
-        file_tool
+        file_tool,
+        helpers.current_utc_timestamp
     ],
 )
 
 task1 = Task(
     # TODO: custom, hard-coded!!!
-    description="Perform a vulnerability assessment for the website: https://notifycyber.com/",
+    description=(
+        "Perform a comprehensive vulnerability assessment for the website 'https://notifycyber.com/'. "
+        "Your assessment should systematically identify potential vulnerabilities, evaluate them for severity, "
+        "and determine their impact on the website's security posture. Use a range of testing techniques to "
+        "uncover any weaknesses that could be exploited by attackers."
+    ),
     agent=NettackerAgent,
-    expected_output="""
-A detailed report summarizing your key findings during your penetration testing of the website. Include details about what vulnerabilities you found, their severity, as well as ways those vulnerabilities could get patched/fixed.
-""",
+    expected_output=(
+        "A detailed report summarizing key findings from the penetration testing conducted. "
+        "Include a list of identified vulnerabilities, categorized by their severity. For each vulnerability, provide a "
+        "detailed description, the potential impact, and recommended remediation strategies to patch or mitigate the risks. "
+        "The report should be clear, well-organized, and actionable, catering to both technical and managerial stakeholders."
+    )
 )
 
 task2 = Task(
-    description="Given the results of a cybersecurity scan/analysis, do some research (using the internet) to figure out/fact-check possible solutions for any issues/vulnerabilities presented in the scan/analysis",
+    description=(
+        "Analyze the results of a recent cybersecurity scan and conduct thorough internet-based research to fact-check "
+        "and identify potential solutions for the issues and vulnerabilities highlighted in the scan. Your research should "
+        "focus on the latest cybersecurity practices and mitigation techniques that could be applied to the detected vulnerabilities."
+    ),
     agent=ResearcherAgent,
-    expected_output="""
-Text, article, blog, or a report explaing the findings from the research. This context should also include the original cybersecurity scan/analysis that was provided before researching
-""",
+    expected_output=(
+        "Produce a detailed report that includes both the original cybersecurity scan results and the findings from your research. "
+        "The report should explain each identified vulnerability, assess its potential impacts, and propose relevant mitigation strategies "
+        "based on current best practices. The document should be structured to provide clarity for both technical and non-technical stakeholders, "
+        "making it suitable for publication as a blog, article, or internal report."
+    )
 )
 
 task3 = Task(
-    description="Generate a comprehensive report on the recent cybersecurity scan results, incorporating external research and web-based findings. The report should include an evaluation of detected vulnerabilities, comparison with industry standards, and recommended strategies for mitigation based on current best practices. Highlight any new threats identified and discuss potential impacts. Ensure the language is clear, and the findings are accessible to both technical and non-technical stakeholders",
+    description=(
+        "Generate a comprehensive report on the recent cybersecurity scan results. "
+        "This report should incorporate external research and web-based findings to "
+        "evaluate detected vulnerabilities, compare them with industry standards, and "
+        "recommend mitigation strategies based on current best practices. Highlight any "
+        "threats identified and discuss their potential impacts. The report should be "
+        "clear and accessible to both technical and non-technical stakeholders."
+    ),
     agent=WriterAgent,
-    expected_output="""
-A 10 to 20 paragraph in depth and comprehensive report written in MarkDown format
-""",
+    expected_output=(
+        "A detailed report consisting of 10 to 20 paragraphs, covering in-depth analysis of "
+        "cybersecurity vulnerabilities, comparative industry insights, and mitigation strategies. "
+        "The report should be written in plain text, ensuring clarity and accessibility for a "
+        "diverse audience. It should also feature a section on newly identified threats and "
+        "their potential impacts."
+    )
+)
+
+task4 = Task(
+    description=(
+        "Convert the provided plain text document into a well-formatted Markdown document. "
+        "The text includes several sections such as headers, lists, code snippets, and tables. "
+        "Your task is to apply Markdown syntax appropriately to enhance readability and structure. "
+        "Ensure that headers are clearly defined, lists are properly bulleted or numbered, "
+        "code snippets are enclosed in code blocks, and tables are correctly formatted. "
+        "The document should be ready for publishing on a professional platform."
+    ),
+    agent=MakeMarkDownAgent,
+    expected_output=(
+        "A Markdown formatted document with distinct sections for headers, lists, "
+        "code blocks, and tables. The document should follow Markdown best practices, "
+        "be visually organized, and maintain the semantic structure of the original text. "
+        "Ensure the final document is suitable for professional publication and meets "
+        "the standards of clarity and accessibility."
+    ),
 )
 
 crew = Crew(
     agents=[NettackerAgent, ResearcherAgent, WriterAgent],
-    tasks=[task1, task2, task3],
+    tasks=[task1, task2, task3, task4],
     process=Process.sequential,
     memory=True,
 )

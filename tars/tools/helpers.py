@@ -1,10 +1,24 @@
 from langchain_community.tools import ShellTool
+from datetime import datetime
+import pytz
 from subprocess import Popen, PIPE
 from crewai_tools import tool
 import subprocess
 import requests
 import platform
 import os
+
+
+@tool("CurrentUTCTime")
+def current_utc_timestamp():
+    """
+    Generates the current time's timestamp in UTC.
+
+    Returns:
+    - string: Current timestamp in UTC
+    """
+    utc_now = datetime.now(pytz.utc)
+    return utc_now.strftime("%Y-%m-%d %H:%M:%S %Z")
 
 
 @tool("PingIP")

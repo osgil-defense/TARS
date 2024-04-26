@@ -162,10 +162,10 @@ def scrape_html(url, time_delay=10):
     options = webdriver.ChromeOptions()
 
     # NOTE: this was added to work in a container
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--headless')
-    options.add_argument('--disable-gpu')
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--headless")
+    options.add_argument("--disable-gpu")
 
     driver = webdriver.Chrome(
         service=Service(ChromeDriverManager().install()), options=options

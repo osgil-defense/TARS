@@ -28,3 +28,4 @@ yarl==1.9.4
 selenium==4.19.0
 webdriver-manager==4.0.1
 validators==0.28.1
+pytz==2024.1
