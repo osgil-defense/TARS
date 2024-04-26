@@ -1,6 +1,5 @@
 from crewai_tools import tool
 from crewai_tools import (
-    FileReadTool,
     SerperDevTool,
     WebsiteSearchTool,
 )
@@ -13,7 +12,6 @@ import time
 import sys
 import os
 
-file_tool = FileReadTool()
 search_tool = SerperDevTool()
 web_rag_tool = WebsiteSearchTool()
 
@@ -61,7 +59,6 @@ WriterAgent = Agent(
     allow_delegation=False,
     llm=ChatOpenAI(model="gpt-4-turbo-2024-04-09"),
     tools=[
-        file_tool,
         helpers.current_utc_timestamp
     ],
 )
@@ -82,10 +79,7 @@ MakeMarkDownAgent = Agent(
         verbose=True,
         temperature=0.25
     ),
-    tools=[
-        file_tool,
-        helpers.current_utc_timestamp
-    ],
+    tools=[],
 )
 
 task1 = Task(
@@ -116,7 +110,8 @@ task2 = Task(
         "Produce a detailed report that includes both the original cybersecurity scan results and the findings from your research. "
         "The report should explain each identified vulnerability, assess its potential impacts, and propose relevant mitigation strategies "
         "based on current best practices. The document should be structured to provide clarity for both technical and non-technical stakeholders, "
-        "making it suitable for publication as a blog, article, or internal report."
+        "making it suitable for publication as a blog, article, or internal report. The output should contain ALL the "
+        "the sources (links) that were used. These links should be cited if need be."
     )
 )
 
