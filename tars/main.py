@@ -4,12 +4,12 @@ import sys
 
 
 def prompt_route(model_name, prompt_template_params, user_input):
-    # one example prompt that would be generated:
+    # example of what a generated prompt would look like:
     """
     You are good at classifying a question.
     Given the user question below, classify it as either being about 'Car', 'Restaurant', or 'Technology'.
 
-    <If the question is about car, mechanics, models, automative technolgoy, classify it as 'Car'>
+    <If the question is about car, mechanics, models, automotive technology, classify it as 'Car'>
     <If the question is about cuisines, dining experiences, or restaurant services, classify it as 'Restaurant'>
     <If the question is about gadgets, software, or technological trends, classify it as 'Technology'>
     <If the question does not fit any of the classifications, classify it as 'None'>
@@ -18,45 +18,44 @@ def prompt_route(model_name, prompt_template_params, user_input):
     How do I fix a wheel?
     <question>
 
-    Classifgication:
+    Classification:
     """
 
     ChatOpenAI(model=model_name, temperature=0)
 
-    # generate classfication listing for prompt
-    main_list = "Given the user question below, classify it as either being about "
-    carrot_list = ""
-    i = 0
-    d = prompt_template_params["options"]
-    for option in d:
-        main_list += f"'{option}'"
-        if i != len(d) - 1:
-            main_list += ", "
+    classification_instructions = "Given the user question below, classify it as either being about "
+    options_descriptions = ""
+    options_data = prompt_template_params["options"]
+    for i, option in enumerate(options_data):
+        classification_instructions += f"'{option}'"
+        if i != len(options_data) - 1:
+            classification_instructions += ", "
         else:
-            main_list += "."
-        tmp = ",".join(d[option][:-1] + ["or " + d[option][-1]]).replace(",", ", ")
-        carrot_list += f"<If the question is about {tmp}, classify it as '{option}'>\n"
-        i += 1
-    carrot_list += f"<If the question does not fit any of the classifications, classify it as '{prompt_template_params['default_none']}'>"
+            classification_instructions += "."
+        
+        formatted_descriptions = ", ".join(options_data[option][:-1] + ["or " + options_data[option][-1]])
+        options_descriptions += f"<If the question is about {formatted_descriptions}, classify it as '{option}'>\n"
 
-    classification_chain = PromptTemplate.from_template(
+    options_descriptions += f"<If the question does not fit any of the classifications, classify it as '{prompt_template_params['default_none']}'>"
+
+    prompt_template = PromptTemplate.from_template(
         """You are good at classifying a question.
-        {main_list}
+        {classification_instructions}
 
-        {carrot_list}
+        {options_descriptions}
 
         <question>
-        {question}
+        {user_input}
         <question>
 
-        Classifgication:"""
+        Classification:"""
     ) | ChatOpenAI()
 
-    classification = classification_chain.invoke(
-        {"question": user_input, "main_list": main_list, "carrot_list": carrot_list}
+    classification_result = prompt_template.invoke(
+        {"user_input": user_input, "classification_instructions": classification_instructions, "options_descriptions": options_descriptions}
     )
 
-    return classification.content
+    return classification_result.content
 
 
 # main function calls
@@ -67,6 +66,8 @@ coptions = {
         "Car": ["car", "mechanics", "models", "automative technolgoy"],
         "Restaurant": ["cuisines", "dining experiences", "restaurant services"],
         "Technology": ["gadgets", "software", "technological trends"],
+        "Food": ["eat","cook","burger","soup","pizza"],
+        "Malicious": ["spam","virus","malware","hack","human hacking"]
     },
 }
 cout = prompt_route(cmodel, coptions, input("PROMPT: "))
