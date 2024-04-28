@@ -7,6 +7,7 @@ import tasks
 import dyanmic_tasks
 import agents
 
+
 def main(user_question):
     prompt_router = routers.prompt_route(
         "gpt-3.5-turbo-0125",
@@ -21,13 +22,23 @@ def main(user_question):
                     "cross-site",
                 ],
                 "Wireless": ["Wi-Fi", "Bluetooth", "NFC", "security protocols"],
-                "Social Engineering": ["phishing", "pretexting", "baiting", "tailgating"],
-                "Physical": ["locks", "security badges", "surveillance", "alarm systems"],
+                "Social Engineering": [
+                    "phishing",
+                    "pretexting",
+                    "baiting",
+                    "tailgating",
+                ],
+                "Physical": [
+                    "locks",
+                    "security badges",
+                    "surveillance",
+                    "alarm systems",
+                ],
                 "Cloud": ["SaaS", "IaaS", "PaaS", "multi-tenancy"],
                 "IoT": ["sensors", "smart devices", "connectivity", "home automation"],
             },
         },
-        user_question
+        user_question,
     )
 
     prompt_router = prompt_router.split(", ")
@@ -54,7 +65,9 @@ def main(user_question):
 
     if crew == None:
         print(f"[ERROR] (1) Question: {question}")
-        print(f"[ERROR] (1) Message:  The inputted question's category is not supported!")
+        print(
+            f"[ERROR] (1) Message:  The inputted question's category is not supported!"
+        )
         sys.exit(1)
 
     # TODO: this prints the final results but it needs major refining
@@ -65,13 +78,14 @@ def main(user_question):
     print(result)
     print(f"\nRUNTIME: {runtime} seconds")
 
+
 # EXAMPLE: "Are there any vulnerabilities with my website: https://notifycyber.com/"
 user_question = input("QUESTION: ")
 
 output_filename = f"stdout_yagent_{int(time.time())}.txt"
 print(f"Writing STDOUT To: {output_filename}")
 original_stdout = sys.stdout
-with open(output_filename, 'w') as f:
+with open(output_filename, "w") as f:
     sys.stdout = f
     main(user_question)
 sys.stdout = original_stdout
