@@ -11,6 +11,7 @@ import signal
 import time
 import json
 import re
+import math
 
 # 3rd party packages
 from webdriver_manager.chrome import ChromeDriverManager
@@ -189,12 +190,34 @@ def tokens_counter(model_name: str, string: str) -> int:
     return num_tokens
 
 
+def trim_end(text, model_name, max_size, p, rs=10):
+    new_text = str(text)
+    current_token_size = tokens_counter(model_name, text)
+
+    while current_token_size > max_size and len(new_text) >= rs:
+        tokens = new_text.split()
+        rs = min(rs, math.ceil(len(tokens) / 2))
+        last_token = tokens[-rs]
+        new_text = new_text[
+            : -(len(last_token) + 1)
+        ]  # +1 to remove the space before last_token
+        current_token_size = tokens_counter(model_name, new_text)
+        rs = int(abs(max_size - current_token_size) * p)
+        rs = max(1, rs)
+
+        # print("{}() - [ Current Token Size: {} | Text Length: {} | RS Value: {} ]".format(trim_end.__name__, current_token_size, len(new_text), rs))
+
+    percentage = len(new_text) / len(text)
+
+    return new_text, percentage
+
+
 ################################################################################################################
 
 
 @tool("ScrapeWebsite")
 def scrape_website(
-    url: str, token_limit: int = 81920, model: str = "gpt-4-turbo"
+    url: str, token_limit: int = 120_000, model: str = "gpt-4-turbo"
 ) -> str:
     """
     Scrape content from the specified URL, remove HTML tags, and limit the output based on token count.
@@ -210,7 +233,9 @@ def scrape_website(
     content = remove_html(scrape_html(url))
     tokens = tokens_counter(model, content)
     if tokens > token_limit:
-        return content[:token_limit]
+        new_prompt, percentage = trim_end(content, model, token_limit, 0.5, 10)
+        print(f"Trimmed scrape for {url} by {(1 - percentage) * 100}%")
+        return new_prompt
     return content
 
 
