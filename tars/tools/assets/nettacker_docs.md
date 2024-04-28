@@ -8,6 +8,14 @@ April 22, 2024
 
 OWASP Nettacker project is created to automate information gathering, vulnerability scanning and eventually generating a report for networks, including services, bugs, vulnerabilities, misconfigurations, and other information. This software will utilize TCP SYN, ACK, ICMP, and many other protocols in order to detect and bypass Firewall/IDS/IPS devices. By leveraging a unique method in OWASP Nettacker for discovering protected services and devices such as SCADA. It would make a competitive edge compared to other scanner making it one of the bests. Learn more about Nettacker by checking out the [OWASP Page](https://owasp.org/www-project-nettacker/), [Wiki](https://github.com/OWASP/Nettacker/wiki), the project's [GitHub repo](https://github.com/OWASP/Nettacker).
 
+## Sources
+
+- https://github.com/OWASP/Nettacker
+- https://www.youtube.com/watch?v=g37U5KoGTxY
+- https://github.com/OWASP/Nettacker/wiki
+- https://www.geeksforgeeks.org/nettacker-automated-penetration-testing-framework/
+- https://medium.com/@harshleenchawla06/nettacker-automated-penetration-testing-framework-061bae344096
+
 ## Nettacker 101
 
 ```
@@ -382,7 +390,9 @@ def nettacker_user_application_config():
 
 OWASP Nettacker Modules can be of type **Scan** (scan for something), **Vuln** (check for some vulnerability) and **Brute** (Brute force) 
 - [OWASP Nettacker](#owasp-nettacker)
+  - [Updated](#updated)
   - [About](#about)
+  - [Sources](#sources)
   - [Nettacker 101](#nettacker-101)
   - [CLI Help/Options Output](#cli-helpoptions-output)
   - [Command Examples](#command-examples)
