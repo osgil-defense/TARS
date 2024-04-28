@@ -16,6 +16,12 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
 RUN apt-get update && apt-get install -y google-chrome-stable
 WORKDIR /root/
 
+# install RustScan
+RUN wget https://github.com/RustScan/RustScan/releases/download/2.2.2/rustscan_2.2.2_amd64.deb
+RUN dpkg -i rustscan_2.2.2_amd64.deb
+RUN rm rustscan_2.2.2_amd64.deb
+RUN apt-get install -y iputils-ping
+
 # segmented run layers so that compiler does not shit pants
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 

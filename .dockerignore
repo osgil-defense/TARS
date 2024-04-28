@@ -1,4 +1,5 @@
 env/
 docs/
 .env
+tars/db/
 
