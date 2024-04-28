@@ -1,74 +1,68 @@
-from langchain_core.prompts import PromptTemplate
-from langchain_openai import ChatOpenAI
+from crewai import Agent, Task, Crew, Process
+import time
 import sys
 
+import routers
+import tasks
+import dyanmic_tasks
+import agents
 
-def prompt_route(model_name, prompt_template_params, user_input):
-    # example of what a generated prompt would look like:
-    """
-    You are good at classifying a question.
-    Given the user question below, classify it as either being about 'Car', 'Restaurant', or 'Technology'.
+# EXAMPLE: "Are there any vulnerabilities with my website: https://notifycyber.com/"
+user_question = input("QUESTION: ")
 
-    <If the question is about car, mechanics, models, automotive technology, classify it as 'Car'>
-    <If the question is about cuisines, dining experiences, or restaurant services, classify it as 'Restaurant'>
-    <If the question is about gadgets, software, or technological trends, classify it as 'Technology'>
-    <If the question does not fit any of the classifications, classify it as 'None'>
+prompt_router = routers.prompt_route(
+    "gpt-3.5-turbo-0125",
+    {
+        "default_none": "None",
+        "options": {
+            "Network": ["protocols", "ports", "encryption", "VPN"],
+            "Web Application": [
+                "HTML/CSS",
+                "JavaScript",
+                "SQL injection",
+                "cross-site",
+            ],
+            "Wireless": ["Wi-Fi", "Bluetooth", "NFC", "security protocols"],
+            "Social Engineering": ["phishing", "pretexting", "baiting", "tailgating"],
+            "Physical": ["locks", "security badges", "surveillance", "alarm systems"],
+            "Cloud": ["SaaS", "IaaS", "PaaS", "multi-tenancy"],
+            "IoT": ["sensors", "smart devices", "connectivity", "home automation"],
+        },
+    },
+    user_question
+)
 
-    <question>
-    How do I fix a wheel?
-    <question>
+prompt_router = prompt_router.split(", ")
+question = user_question
+crew = None
 
-    Classification:
-    """
-
-    ChatOpenAI(model=model_name, temperature=0)
-
-    classification_instructions = "Given the user question below, classify it as either being about "
-    options_descriptions = ""
-    options_data = prompt_template_params["options"]
-    for i, option in enumerate(options_data):
-        classification_instructions += f"'{option}'"
-        if i != len(options_data) - 1:
-            classification_instructions += ", "
-        else:
-            classification_instructions += "."
-        
-        formatted_descriptions = ", ".join(options_data[option][:-1] + ["or " + options_data[option][-1]])
-        options_descriptions += f"<If the question is about {formatted_descriptions}, classify it as '{option}'>\n"
-
-    options_descriptions += f"<If the question does not fit any of the classifications, classify it as '{prompt_template_params['default_none']}'>"
-
-    prompt_template = PromptTemplate.from_template(
-        """You are good at classifying a question.
-        {classification_instructions}
-
-        {options_descriptions}
-
-        <question>
-        {user_input}
-        <question>
-
-        Classification:"""
-    ) | ChatOpenAI()
-
-    classification_result = prompt_template.invoke(
-        {"user_input": user_input, "classification_instructions": classification_instructions, "options_descriptions": options_descriptions}
+if "Network" in prompt_router:
+    crew = Crew(
+        agents=[
+            agents.NettackerAgent,
+            agents.ResearcherAgent,
+            agents.WriterAgent,
+            agents.MakeMarkDownAgent,
+        ],
+        tasks=[
+            dyanmic_tasks.pentest_task(question, agents.NettackerAgent),
+            tasks.cybersecurity_research,
+            tasks.build_cybersecurity_report,
+            tasks.convert_report_to_markdown,
+        ],
+        process=Process.sequential,
+        memory=True,
     )
 
-    return classification_result.content
+if crew == None:
+    print(f"[ERROR] (1) Question: {question}")
+    print(f"[ERROR] (1) Message:  The inputted question's category is not supported!")
+    sys.exit(1)
 
-
-# main function calls
-cmodel = "gpt-4-turbo-2024-04-09"
-coptions = {
-    "default_none": "None",
-    "options": {
-        "Car": ["car", "mechanics", "models", "automative technolgoy"],
-        "Restaurant": ["cuisines", "dining experiences", "restaurant services"],
-        "Technology": ["gadgets", "software", "technological trends"],
-        "Food": ["eat","cook","burger","soup","pizza"],
-        "Malicious": ["spam","virus","malware","hack","human hacking"]
-    },
-}
-cout = prompt_route(cmodel, coptions, input("PROMPT: "))
-print(cout)
+# TODO: this prints the final results but it needs major refining
+start_time = time.time()
+result = crew.kickoff()
+runtime = time.time() - start_time
+print("\n\n\n=====================[REPORT]=====================\n\n\n")
+print(result)
+print(f"\nRUNTIME: {runtime} seconds")

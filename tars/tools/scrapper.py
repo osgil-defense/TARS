@@ -193,7 +193,9 @@ def tokens_counter(model_name: str, string: str) -> int:
 
 
 @tool("ScrapeWebsite")
-def scrape_website(url: str, token_limit: int = 81920, model: str = "gpt-4-turbo") -> str:
+def scrape_website(
+    url: str, token_limit: int = 81920, model: str = "gpt-4-turbo"
+) -> str:
     """
     Scrape content from the specified URL, remove HTML tags, and limit the output based on token count.
 

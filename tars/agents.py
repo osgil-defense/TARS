@@ -1,19 +1,16 @@
+from crewai import Agent, Task, Crew, Process
 from crewai_tools import tool
 from crewai_tools import (
     SerperDevTool,
     WebsiteSearchTool,
 )
+
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_openai import ChatOpenAI
 from subprocess import Popen, PIPE
-from crewai import Agent, Task, Crew, Process
-import time
 import sys
 import os
-
-search_tool = SerperDevTool()
-web_rag_tool = WebsiteSearchTool()
 
 sys.path.append(os.path.join(str("/".join(__file__.split("/")[:-1])), "tools"))
 from tools import nettacker, helpers, scrapper, search
@@ -46,8 +43,8 @@ ResearcherAgent = Agent(
         scrapper.crawl_website_urls,
         scrapper.scrape_website,
         search.search_engine,
-        web_rag_tool,
-        search_tool,
+        WebsiteSearchTool(),
+        SerperDevTool(),
     ],
 )
 
@@ -58,9 +55,7 @@ WriterAgent = Agent(
     verbose=True,
     allow_delegation=False,
     llm=ChatOpenAI(model="gpt-4-turbo-2024-04-09"),
-    tools=[
-        helpers.current_utc_timestamp
-    ],
+    tools=[helpers.current_utc_timestamp],
 )
 
 MakeMarkDownAgent = Agent(
@@ -74,98 +69,6 @@ MakeMarkDownAgent = Agent(
     ),
     verbose=True,
     allow_delegation=False,
-    llm=ChatGoogleGenerativeAI(
-        model="gemini-pro",
-        verbose=True,
-        temperature=0.25
-    ),
+    llm=ChatGoogleGenerativeAI(model="gemini-pro", verbose=True, temperature=0.25),
     tools=[],
 )
-
-task1 = Task(
-    # TODO: custom, hard-coded!!!
-    description=(
-        "Perform a comprehensive vulnerability assessment for the website 'https://notifycyber.com/'. "
-        "Your assessment should systematically identify potential vulnerabilities, evaluate them for severity, "
-        "and determine their impact on the website's security posture. Use a range of testing techniques to "
-        "uncover any weaknesses that could be exploited by attackers."
-    ),
-    agent=NettackerAgent,
-    expected_output=(
-        "A detailed report summarizing key findings from the penetration testing conducted. "
-        "Include a list of identified vulnerabilities, categorized by their severity. For each vulnerability, provide a "
-        "detailed description, the potential impact, and recommended remediation strategies to patch or mitigate the risks. "
-        "The report should be clear, well-organized, and actionable, catering to both technical and managerial stakeholders."
-    )
-)
-
-task2 = Task(
-    description=(
-        "Analyze the results of a recent cybersecurity scan and conduct thorough internet-based research to fact-check "
-        "and identify potential solutions for the issues and vulnerabilities highlighted in the scan. Your research should "
-        "focus on the latest cybersecurity practices and mitigation techniques that could be applied to the detected vulnerabilities."
-    ),
-    agent=ResearcherAgent,
-    expected_output=(
-        "Produce a detailed report that includes both the original cybersecurity scan results and the findings from your research. "
-        "The report should explain each identified vulnerability, assess its potential impacts, and propose relevant mitigation strategies "
-        "based on current best practices. The document should be structured to provide clarity for both technical and non-technical stakeholders, "
-        "making it suitable for publication as a blog, article, or internal report. The output should contain ALL the "
-        "the sources (links) that were used. These links should be cited if need be."
-    )
-)
-
-task3 = Task(
-    description=(
-        "Generate a comprehensive report on the recent cybersecurity scan results. "
-        "This report should incorporate external research and web-based findings to "
-        "evaluate detected vulnerabilities, compare them with industry standards, and "
-        "recommend mitigation strategies based on current best practices. Highlight any "
-        "threats identified and discuss their potential impacts. The report should be "
-        "clear and accessible to both technical and non-technical stakeholders."
-    ),
-    agent=WriterAgent,
-    expected_output=(
-        "A detailed report consisting of 10 to 20 paragraphs, covering in-depth analysis of "
-        "cybersecurity vulnerabilities, comparative industry insights, and mitigation strategies. "
-        "The report should be written in plain text, ensuring clarity and accessibility for a "
-        "diverse audience. It should also feature a section on newly identified threats and "
-        "their potential impacts."
-    )
-)
-
-task4 = Task(
-    description=(
-        "Convert the provided plain text document into a well-formatted Markdown document. "
-        "The text includes several sections such as headers, lists, code snippets, and tables. "
-        "Your task is to apply Markdown syntax appropriately to enhance readability and structure. "
-        "Ensure that headers are clearly defined, lists are properly bulleted or numbered, "
-        "code snippets are enclosed in code blocks, and tables are correctly formatted. "
-        "The document should be ready for publishing on a professional platform."
-    ),
-    agent=MakeMarkDownAgent,
-    expected_output=(
-        "A Markdown formatted document with distinct sections for headers, lists, "
-        "code blocks, and tables. The document should follow Markdown best practices, "
-        "be visually organized, and maintain the semantic structure of the original text. "
-        "Ensure the final document is suitable for professional publication and meets "
-        "the standards of clarity and accessibility."
-    ),
-)
-
-crew = Crew(
-    agents=[NettackerAgent, ResearcherAgent, WriterAgent],
-    tasks=[task1, task2, task3, task4],
-    process=Process.sequential,
-    memory=True,
-)
-
-start_time = time.time()
-
-result = crew.kickoff()
-
-runtime = time.time() - start_time
-
-print("\n\n\n=====================[REPORT]=====================\n\n\n")
-print(result)
-print(f"\nRUNTIME: {runtime} seconds")
