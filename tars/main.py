@@ -7,37 +7,27 @@ import tasks
 import dyanmic_tasks
 import agents
 
+import config
 
-def main(user_question):
+def crewai_result_to_json(result):
+    try:
+        output = {"final_output": result["final_output"], "tasks_outputs": []}
+        for task_output in result["tasks_outputs"]:
+            output["tasks_outputs"].append(
+                {
+                    "description": task_output.description,
+                    "summary": task_output.summary,
+                    "exported_output": task_output.exported_output,
+                }
+            )
+        return output
+    except:
+        return result
+
+def call_crew(user_question):
     prompt_router = routers.prompt_route(
-        "gpt-3.5-turbo-0125",
-        {
-            "default_none": "None",
-            "options": {
-                "Network": ["protocols", "ports", "encryption", "VPN"],
-                "Web Application": [
-                    "HTML/CSS",
-                    "JavaScript",
-                    "SQL injection",
-                    "cross-site",
-                ],
-                "Wireless": ["Wi-Fi", "Bluetooth", "NFC", "security protocols"],
-                "Social Engineering": [
-                    "phishing",
-                    "pretexting",
-                    "baiting",
-                    "tailgating",
-                ],
-                "Physical": [
-                    "locks",
-                    "security badges",
-                    "surveillance",
-                    "alarm systems",
-                ],
-                "Cloud": ["SaaS", "IaaS", "PaaS", "multi-tenancy"],
-                "IoT": ["sensors", "smart devices", "connectivity", "home automation"],
-            },
-        },
+        config.router_model_name,
+        config.router_config,
         user_question,
     )
 
@@ -61,22 +51,25 @@ def main(user_question):
             ],
             process=Process.sequential,
             memory=True,
+            cache=True,
+            full_output=True,
         )
 
     if crew == None:
-        print(f"[ERROR] (1) Question: {question}")
-        print(
-            f"[ERROR] (1) Message:  The inputted question's category is not supported!"
-        )
-        sys.exit(1)
+        return None
 
-    # TODO: this prints the final results but it needs major refining
+    # run the job (crew team)
     start_time = time.time()
     result = crew.kickoff()
     runtime = time.time() - start_time
-    print("\n\n\n=====================[REPORT]=====================\n\n\n")
-    print(result)
-    print(f"\nRUNTIME: {runtime} seconds")
+
+    return {
+        "result": crewai_result_to_json(result),
+        "runtime": {
+            "runtime": runtime,
+            "unit": "seconds"
+        }
+    }
 
 
 # EXAMPLE: "Are there any vulnerabilities with my website: https://notifycyber.com/"
@@ -84,9 +77,10 @@ user_question = input("QUESTION: ")
 
 output_filename = f"stdout_yagent_{int(time.time())}.txt"
 print(f"Writing STDOUT To: {output_filename}")
+call_crew_output = None
 original_stdout = sys.stdout
 with open(output_filename, "w") as f:
     sys.stdout = f
-    main(user_question)
+    call_crew(user_question)
 sys.stdout = original_stdout
 print(f"Finished Writing To: {output_filename}")
