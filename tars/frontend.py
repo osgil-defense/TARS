@@ -1,11 +1,73 @@
 import streamlit as st
 from openai import OpenAI
+import subprocess
 import time
 import json
+import uuid
+import shlex
 import sys
 import os
 
-from tars import Job
+def run_agents(user_question):
+    # TODO: this might not be that good...
+    events_dir = os.path.join(os.path.dirname(__file__), "events")
+
+    cli_filepath = os.path.join(os.path.dirname(__file__), "cli.py")
+    clid = f"{uuid.uuid4()}_{int(time.time())}"
+    cli_id = shlex.quote(f"{clid}")
+    user_question = shlex.quote(user_question)
+    
+    cmd = f"python3 {cli_filepath} --current_job_id {cli_id} --user_question {user_question} --events_directory {events_dir} &"
+
+    os.system(cmd)
+
+    return {
+        "id": clid,
+        "paths": {
+            "text": os.path.join(events_dir, f"{cli_id}.txt"),
+            "json": os.path.join(events_dir, f"{cli_id}.json")
+        }
+    }
+
+def agent_running(id):
+    command = f"ps aux | grep {id} | grep 'python' | grep -v 'grep'"
+
+    result = subprocess.run(command, shell=True, text=True, capture_output=True)
+    output = result.stdout
+
+    pid = None
+    try:
+        pid = int(
+            [item for item in output.split(" ") if item][1]
+        )
+    except:
+        pass
+
+    running = True
+    if len(output) == 0:
+        running = False
+
+    return {
+        "pid": pid,
+        "status": running
+    }
+
+def load_agent_content(text_path=None, json_path=None):
+    output = {
+        "text": None,
+        "json": None
+    }
+
+    if text_path != None and os.path.exists(text_path):
+        with open(text_path, "r") as file:
+            output["text"] = file.read()
+    
+    if json_path != None and os.path.exists(json_path):
+        with open(json_path, 'r') as f:
+            output["json"] = json.load(f)
+    
+    return output
+
 
 # Initialize the OpenAI client with an API key
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
@@ -17,7 +79,10 @@ if "submitted" not in st.session_state:
     st.session_state["website"] = ""
     st.session_state["sys_prompt"] = ""
     st.session_state["openai_model"] = "gpt-4-turbo"
-    st.session_state["run_agents"] = False
+    st.session_state["run_agent"] = False
+    st.session_state["agent_running"] = False
+    st.session_state["init_agent_output"] = {}
+    st.session_state["agent_done"] = False
 
 # Page configuration and layout
 st.set_page_config(page_title="Medusa - Beta")
@@ -51,62 +116,8 @@ Task Description:
             )
 
     if st.session_state["submitted"]:
-        st.session_state["run_agents"] = True
+        st.session_state["run_agent"] = True
         st.rerun()
-
-
-if st.session_state["run_agents"]:
-    st.session_state["run_agents"] = False
-
-    job_manager = Job()
-    job_id = job_manager.start(st.session_state["sys_prompt"])
-    # if job_id is not None:
-    #     print(f"Job started with ID: {job_id}")
-    # else:
-    #     print("Failed to start job or job is already running.")
-
-    st.session_state.messages.append(
-        {"role": "system", "content": f"Started job {job_id}"}
-    )
-
-    while True:
-        status = job_manager.status()
-        st.session_state.messages.append(
-            {"role": "system", "content": f"Current Job Status: {status['status']}"}
-        )
-        if status["status"] != "running":
-            break
-        time.sleep(10)
-
-    if status["status"] == "not running":
-        job_details = job_manager.get_history(job_id)
-        if job_details:
-            if "error" in job_details:
-                st.session_state.messages.append(
-                    {
-                        "role": "system",
-                        "content": f"Job Failed With Error: {job_details['error']}",
-                    }
-                )
-            else:
-                st.session_state.messages.append(
-                    {
-                        "role": "system",
-                        "content": f"Job Failed With Error: {job_details['error']}",
-                    }
-                )
-
-                # TODO: "print" final result(s)
-                st.session_state.messages.append(
-                    {
-                        "role": "system",
-                        "content": job_details["output"]["result"]["final_output"],
-                    }
-                )
-        else:
-            st.session_state.messages.append(
-                {"role": "system", "content": "No details found for the completed job"}
-            )
 
 
 # Display messages from session state
@@ -114,7 +125,49 @@ for message in st.session_state["messages"]:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-if st.session_state["submitted"]:
+if st.session_state["run_agent"] == True:
+    init_agent_output = run_agents(st.session_state["sys_prompt"])
+    print(f"Started new agent session: {init_agent_output['id']}")
+    st.session_state["init_agent_output"] = init_agent_output
+    st.session_state["run_agent"] = False
+    print(st.session_state["agent_running"])
+    st.session_state["agent_running"] = True
+    print(st.session_state["agent_running"])
+    print()
+    st.rerun()
+
+if st.session_state["agent_running"]:
+    aid = st.session_state["init_agent_output"]["id"]
+    astatus = agent_running(aid)
+    print("===> astatus: ", astatus)
+    if astatus["status"] == True:
+        print(f"Agent id {aid} is still running...")
+        st.session_state.messages.append(
+            {"role": "system", "content": "Running..."}
+        )
+        time.sleep(2)
+        st.rerun()
+    else:
+        print(f"Agent id {aid} is DONE!")
+        st.session_state["agent_running"] = False
+        docs = load_agent_content(
+            st.session_state["init_agent_output"]["paths"]["text"],
+            st.session_state["init_agent_output"]["paths"]["json"]
+        )
+
+        print("====FINAL_REPORT=====")
+        print(docs["json"]["output"]["result"])
+        print("====FINAL_REPORT=====")
+        
+        # print final result
+        st.session_state.messages.append(
+            {"role": "system", "content": docs["json"]["output"]["result"]["final_output"]}
+        )
+
+        st.session_state["agent_done"] = True
+        st.rerun()
+
+if st.session_state["submitted"] and st.session_state["agent_done"]:
     # Chat input for interaction
     prompt = st.chat_input("Ask about the commands executed")
     if prompt:

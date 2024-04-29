@@ -41,7 +41,7 @@ def main(current_job_id, user_question, events_directory):
             "raw_output_file_path": raw_output_file_path,
             "completed": True,
             "error": None,
-            "time": time.time()
+            "time": time.time(),
         }
     except Exception as e:
         output = {
@@ -50,7 +50,7 @@ def main(current_job_id, user_question, events_directory):
             "raw_output_file_path": raw_output_file_path,
             "completed": False,
             "error": f"{e}",
-            "time": time.time()
+            "time": time.time(),
         }
 
     write_json(final_output_file_path, output)
