@@ -31,5 +31,3 @@ validators==0.28.1
 pytz==2024.1
 streamlit==1.33.0
 watchdog==4.0.0
-fastapi==0.110.2
-uvicorn==0.29.0
