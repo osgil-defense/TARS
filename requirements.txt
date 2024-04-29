@@ -29,3 +29,5 @@ selenium==4.19.0
 webdriver-manager==4.0.1
 validators==0.28.1
 pytz==2024.1
+streamlit==1.33.0
+watchdog==4.0.0
