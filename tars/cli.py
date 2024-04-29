@@ -10,11 +10,6 @@ import crews
 import support
 
 
-def load_file(filepath):
-    with open(filepath, "r", encoding="utf-8") as file:
-        return file.read()
-
-
 def write_json(path, data):
     with open(str(path), "w") as file:
         json.dump(data, file, indent=4)
@@ -26,6 +21,11 @@ def main(current_job_id, user_question, events_directory):
 
     raw_output_file_path = os.path.join(events_directory, f"{current_job_id}.txt")
     final_output_file_path = os.path.join(events_directory, f"{current_job_id}.json")
+
+    if os.path.exists(raw_output_file_path):
+        return
+    if os.path.exists(final_output_file_path):
+        return
 
     output = {}
     try:
@@ -40,6 +40,8 @@ def main(current_job_id, user_question, events_directory):
             "output": function_output,
             "raw_output_file_path": raw_output_file_path,
             "completed": True,
+            "error": None,
+            "time": time.time()
         }
     except Exception as e:
         output = {
@@ -47,22 +49,29 @@ def main(current_job_id, user_question, events_directory):
             "output": None,
             "raw_output_file_path": raw_output_file_path,
             "completed": False,
+            "error": f"{e}",
+            "time": time.time()
         }
 
     write_json(final_output_file_path, output)
 
+    return
+
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Process some parameters.")
+    parser = argparse.ArgumentParser(description="")
+
     parser.add_argument(
         "--current_job_id",
         type=str,
         required=True,
         help="A unique identifier for the current job",
     )
+
     parser.add_argument(
         "--user_question", type=str, required=True, help="The user question to process"
     )
+
     parser.add_argument(
         "--events_directory",
         type=str,
