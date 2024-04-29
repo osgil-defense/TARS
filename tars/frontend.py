@@ -83,16 +83,25 @@ if st.session_state["run_agents"]:
         if job_details:
             if "error" in job_details:
                 st.session_state.messages.append(
-                    {"role": "system", "content": f"Job Failed With Error: {job_details['error']}"}
+                    {
+                        "role": "system",
+                        "content": f"Job Failed With Error: {job_details['error']}",
+                    }
                 )
             else:
                 st.session_state.messages.append(
-                    {"role": "system", "content": f"Job Failed With Error: {job_details['error']}"}
+                    {
+                        "role": "system",
+                        "content": f"Job Failed With Error: {job_details['error']}",
+                    }
                 )
 
                 # TODO: "print" final result(s)
                 st.session_state.messages.append(
-                    {"role": "system", "content": job_details["output"]["result"]["final_output"]}
+                    {
+                        "role": "system",
+                        "content": job_details["output"]["result"]["final_output"],
+                    }
                 )
         else:
             st.session_state.messages.append(

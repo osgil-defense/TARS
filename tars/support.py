@@ -30,6 +30,7 @@ def execute_and_log(func, output_filename, *args, **kwargs):
             def write(self, message):
                 self.terminal.write(message)
                 self.file.write(message)
+                self.file.flush()
 
             def flush(self):
                 self.terminal.flush()
