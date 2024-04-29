@@ -1,10 +1,11 @@
 import streamlit as st
 from openai import OpenAI
+import time
+import json
 import sys
 import os
 
-# sys.path.append(os.path.join(str("/".join(__file__.split("/")[:-2])), "tars"))
-# import tars
+from tars import Job
 
 # Initialize the OpenAI client with an API key
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
@@ -16,11 +17,12 @@ if "submitted" not in st.session_state:
     st.session_state["website"] = ""
     st.session_state["sys_prompt"] = ""
     st.session_state["openai_model"] = "gpt-4-turbo"
+    st.session_state["run_agents"] = False
 
 # Page configuration and layout
 st.set_page_config(page_title="Medusa - Beta")
 st.markdown("<h1 style='text-align: center;'>Medusa</h1>", unsafe_allow_html=True)
-st.image(image="logo.jpg")
+# st.image(image="logo.jpg")
 
 # User input form
 if not st.session_state["submitted"]:
@@ -49,7 +51,54 @@ Task Description:
             )
 
     if st.session_state["submitted"]:
+        st.session_state["run_agents"] = True
         st.rerun()
+
+
+if st.session_state["run_agents"]:
+    st.session_state["run_agents"] = False
+
+    job_manager = Job()
+    job_id = job_manager.start(st.session_state["sys_prompt"])
+    # if job_id is not None:
+    #     print(f"Job started with ID: {job_id}")
+    # else:
+    #     print("Failed to start job or job is already running.")
+
+    st.session_state.messages.append(
+        {"role": "system", "content": f"Started job {job_id}"}
+    )
+
+    while True:
+        status = job_manager.status()
+        st.session_state.messages.append(
+            {"role": "system", "content": f"Current Job Status: {status['status']}"}
+        )
+        if status["status"] != "running":
+            break
+        time.sleep(10)
+
+    if status["status"] == "not running":
+        job_details = job_manager.get_history(job_id)
+        if job_details:
+            if "error" in job_details:
+                st.session_state.messages.append(
+                    {"role": "system", "content": f"Job Failed With Error: {job_details['error']}"}
+                )
+            else:
+                st.session_state.messages.append(
+                    {"role": "system", "content": f"Job Failed With Error: {job_details['error']}"}
+                )
+
+                # TODO: "print" final result(s)
+                st.session_state.messages.append(
+                    {"role": "system", "content": job_details["output"]["result"]["final_output"]}
+                )
+        else:
+            st.session_state.messages.append(
+                {"role": "system", "content": "No details found for the completed job"}
+            )
+
 
 # Display messages from session state
 for message in st.session_state["messages"]:

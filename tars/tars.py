@@ -121,6 +121,7 @@ class Job:
 # else:
 #     print("Failed to start job or job is already running.")
 #     sys.exit(1)
+
 # while True:
 #     status = job_manager.status()
 #     print(f"Current status: {status['status']}")
@@ -128,6 +129,7 @@ class Job:
 #         print("Job is no longer running.")
 #         break
 #     time.sleep(2)  # Check every 2 seconds
+
 # if status["status"] == "not running":
 #     job_details = job_manager.get_history(job_id)
 #     if job_details:
