@@ -2,128 +2,23 @@ from crewai import Agent, Task, Crew, Process
 import threading
 import uuid
 import time
+import json
 import sys
 import os
 
-import routers
-import tasks
-import dyanmic_tasks
-import agents
-import json
-
-import config
-
-
-def crewai_result_to_json(result):
-    try:
-        output = {"final_output": result["final_output"], "tasks_outputs": []}
-        for task_output in result["tasks_outputs"]:
-            output["tasks_outputs"].append(
-                {
-                    "description": task_output.description,
-                    "summary": task_output.summary,
-                    "exported_output": task_output.exported_output,
-                }
-            )
-        return output
-    except:
-        return result
-
-
-def call_crew(user_question):
-    prompt_router = routers.prompt_route(
-        config.router_model_name,
-        config.router_config,
-        user_question,
-    )
-
-    prompt_router = prompt_router.split(", ")
-    question = user_question
-    crew = None
-
-    if "Network" in prompt_router:
-        # # TODO: remove after quick testing
-        # crew = Crew(
-        #     agents=[
-        #         agents.NettackerAgent,
-        #         agents.ResearcherAgent,
-        #         agents.WriterAgent,
-        #         agents.MakeMarkDownAgent,
-        #     ],
-        #     tasks=[
-        #         dyanmic_tasks.pentest_task(question, agents.NettackerAgent),
-        #         tasks.cybersecurity_research,
-        #         tasks.build_cybersecurity_report,
-        #         tasks.convert_report_to_markdown,
-        #     ],
-        #     process=Process.sequential,
-        #     memory=True,
-        #     cache=True,
-        #     full_output=True,
-        # )
-
-        # TODO: remove after quick testing
-        crew = Crew(
-            agents=[agents.WriterAgent],
-            tasks=[tasks.build_cybersecurity_report],
-            process=Process.sequential,
-            memory=True,
-            cache=True,
-            full_output=True,
-        )
-
-    if crew == None:
-        return None
-
-    # run the job (crew team)
-    start_time = time.time()
-    result = crew.kickoff()
-    runtime = time.time() - start_time
-
-    return {
-        "result": crewai_result_to_json(result),
-        "runtime": {"runtime": runtime, "unit": "seconds"},
-    }
-
-
-class DualOutput:
-    def __init__(self, terminal, file):
-        self.terminal = terminal
-        self.file = file
-
-    def write(self, message):
-        self.terminal.write(message)
-        self.file.write(message)
-
-    def flush(self):
-        self.terminal.flush()
-        self.file.flush()
-
-
-def execute_and_log(func, output_filename, *args, **kwargs):
-    original_stdout = sys.stdout
-    with open(output_filename, "w") as f:
-        sys.stdout = DualOutput(original_stdout, f)
-        try:
-            function_output = func(*args, **kwargs)
-        finally:
-            sys.stdout = original_stdout
-    return function_output, output_filename
-
-
-def load_file(file_path):
-    with open(file_path, "r", encoding="utf-8") as file:
-        return file.read()
-
-
-events_directory = os.path.join(str("/".join(__file__.split("/")[:-1])), "events")
-
-if not os.path.exists(events_directory):
-    os.makedirs(events_directory)
+import crews
+import support
 
 
 class Job:
     def __init__(self):
+        events_directory = os.path.join(
+            str("/".join(__file__.split("/")[:-1])), "events"
+        )
+        if not os.path.exists(events_directory):
+            os.makedirs(events_directory)
+
+        self.events_directory = events_directory
         self.thread = None
         self.is_running = False
         self.jobs_history = []
@@ -138,7 +33,7 @@ class Job:
             if not self.is_running:
                 self.current_job_id = f"{uuid.uuid4()}_{int(time.time())}"
                 self.output_file_path = os.path.join(
-                    events_directory, f"{self.current_job_id}.txt"
+                    self.events_directory, f"{self.current_job_id}.txt"
                 )
                 self.stop_event.clear()
                 self.thread = threading.Thread(target=self.run, args=(user_question,))
@@ -150,25 +45,28 @@ class Job:
 
     def run(self, user_question):
         try:
-            function_output, output_filename = execute_and_log(
-                call_crew, self.output_file_path, user_question
+            function_output, output_filename = support.execute_and_log(
+                crews.call_crew, self.output_file_path, user_question
             )
             with self.lock:
-                self.jobs_history.append({
-                    "id": self.current_job_id,
-                    "output": function_output,
-                    "process_file": load_file(output_filename),
-                    "output_file_path": self.output_file_path,
-                    "status": "Completed",
-                })
+                self.jobs_history.append(
+                    {
+                        "id": self.current_job_id,
+                        "output": function_output,
+                        "output_file_path": self.output_file_path,
+                        "status": "Completed",
+                    }
+                )
         except Exception as e:
             with self.lock:
                 self.last_error = str(e)
-                self.jobs_history.append({
-                    "id": self.current_job_id,
-                    "error": self.last_error,
-                    "status": "Failed",
-                })
+                self.jobs_history.append(
+                    {
+                        "id": self.current_job_id,
+                        "error": self.last_error,
+                        "status": "Failed",
+                    }
+                )
         finally:
             with self.lock:
                 self.is_running = False
@@ -186,6 +84,22 @@ class Job:
                         return entry
             return self.jobs_history
 
+    def get_file(self, id):
+        filepath = None
+        for entry in self.jobs_history:
+            if entry.get("id") == id:
+                filepath = entry.get("output_file_path")
+                break
+
+        if filepath == None:
+            return filepath
+
+        try:
+            with open(filepath, "r", encoding="utf-8") as file:
+                return file.read()
+        except:
+            return None
+
     def stop(self):
         with self.lock:
             if not self.is_running:
@@ -201,7 +115,7 @@ class Job:
 
 # TODO: remove after testing!!!
 job_manager = Job()
-job_id = job_manager.start('Is my network secure for: https://notifycyber.com/')
+job_id = job_manager.start("Is my network secure for: https://notifycyber.com/")
 if job_id is not None:
     print(f"Job started with ID: {job_id}")
 else:
@@ -210,14 +124,14 @@ else:
 while True:
     status = job_manager.status()
     print(f"Current status: {status['status']}")
-    if status['status'] != "running":
+    if status["status"] != "running":
         print("Job is no longer running.")
         break
     time.sleep(2)  # Check every 2 seconds
-if status['status'] == "not running":
+if status["status"] == "not running":
     job_details = job_manager.get_history(job_id)
     if job_details:
-        if 'error' in job_details:
+        if "error" in job_details:
             print(f"Job failed with error: {job_details['error']}")
         else:
             print_it = json.dumps(job_details, indent=4)
@@ -226,5 +140,3 @@ if status['status'] == "not running":
         print("No details found for the completed job.")
 else:
     print("Job status unclear.")
-
-
