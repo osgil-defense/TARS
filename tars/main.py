@@ -113,30 +113,30 @@ class Job:
                 return False
 
 
-# TODO: remove after testing!!!
-job_manager = Job()
-job_id = job_manager.start("Is my network secure for: https://notifycyber.com/")
-if job_id is not None:
-    print(f"Job started with ID: {job_id}")
-else:
-    print("Failed to start job or job is already running.")
-    sys.exit(1)
-while True:
-    status = job_manager.status()
-    print(f"Current status: {status['status']}")
-    if status["status"] != "running":
-        print("Job is no longer running.")
-        break
-    time.sleep(2)  # Check every 2 seconds
-if status["status"] == "not running":
-    job_details = job_manager.get_history(job_id)
-    if job_details:
-        if "error" in job_details:
-            print(f"Job failed with error: {job_details['error']}")
-        else:
-            print_it = json.dumps(job_details, indent=4)
-            print(f"Job completed successfully. Output: {print_it}")
-    else:
-        print("No details found for the completed job.")
-else:
-    print("Job status unclear.")
+# # TODO: remove after testing!!!
+# job_manager = Job()
+# job_id = job_manager.start("Is my network secure for: https://notifycyber.com/")
+# if job_id is not None:
+#     print(f"Job started with ID: {job_id}")
+# else:
+#     print("Failed to start job or job is already running.")
+#     sys.exit(1)
+# while True:
+#     status = job_manager.status()
+#     print(f"Current status: {status['status']}")
+#     if status["status"] != "running":
+#         print("Job is no longer running.")
+#         break
+#     time.sleep(2)  # Check every 2 seconds
+# if status["status"] == "not running":
+#     job_details = job_manager.get_history(job_id)
+#     if job_details:
+#         if "error" in job_details:
+#             print(f"Job failed with error: {job_details['error']}")
+#         else:
+#             print_it = json.dumps(job_details, indent=4)
+#             print(f"Job completed successfully. Output: {print_it}")
+#     else:
+#         print("No details found for the completed job.")
+# else:
+#     print("Job status unclear.")
