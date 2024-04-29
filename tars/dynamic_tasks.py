@@ -2,9 +2,6 @@ from crewai import Agent, Task, Crew, Process
 from textwrap import dedent
 import agents
 
-# agents.NettackerAgent
-
-
 def pentest_task(question, agent):
     return Task(
         description=dedent(

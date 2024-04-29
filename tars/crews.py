@@ -6,7 +6,7 @@ import os
 
 import routers
 import tasks
-import dyanmic_tasks
+import dynamic_tasks
 import agents
 import support
 
@@ -22,7 +22,7 @@ def networkPentTester(question):
             agents.MakeMarkDownAgent,
         ],
         tasks=[
-            dyanmic_tasks.pentest_task(question, agents.NettackerAgent),
+            dynamic_tasks.pentest_task(question, agents.NettackerAgent),
             tasks.cybersecurity_research,
             tasks.build_cybersecurity_report,
             tasks.convert_report_to_markdown,
