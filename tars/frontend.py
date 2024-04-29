@@ -90,7 +90,7 @@ st.markdown("<h1 style='text-align: center;'>Medusa</h1>", unsafe_allow_html=Tru
 # st.image(image="logo.jpg")
 
 # User input form
-if not st.session_state["submitted"]:
+if not st.session_state["submitted"] and not st.session_state["run_agent"]:
     with st.form("my_form"):
         st.session_state["website"] = st.text_input(
             "Website To Test", st.session_state["website"]
@@ -142,10 +142,9 @@ if st.session_state["agent_running"]:
     print("===> astatus: ", astatus)
     if astatus["status"] == True:
         print(f"Agent id {aid} is still running...")
-        st.session_state.messages.append(
-            {"role": "system", "content": "Running..."}
-        )
-        time.sleep(2)
+        with st.status("Processing..."):
+            st.write("Crew(s) can take anywhere from 30 seconds to 10 minutes to run")
+            time.sleep(10)
         st.rerun()
     else:
         print(f"Agent id {aid} is DONE!")
