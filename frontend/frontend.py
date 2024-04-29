@@ -1,6 +1,10 @@
 import streamlit as st
 from openai import OpenAI
+import sys
 import os
+
+# sys.path.append(os.path.join(str("/".join(__file__.split("/")[:-2])), "tars"))
+# import tars
 
 # Initialize the OpenAI client with an API key
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
