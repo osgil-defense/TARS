@@ -1,6 +1,23 @@
+"""
+Dear Programmer:
+
+When I wrote this code, only God and I knew how it worked.
+Now, only God knows!
+
+Streamlit is a shit product, don't use it. But we are too,
+deep into this now to change this. Maybe in another life.
+
+So if you are trying to optimize this routine and fail,
+(very likely) please increase the following counter
+as a warning to the next developer:
+
+total_hours_lost_here = 18
+"""
+
 import streamlit as st
 from openai import OpenAI
 import subprocess
+import random
 import time
 import json
 import uuid
@@ -90,6 +107,13 @@ def remove_color_codes(text):
     return ansi_escape.sub("", text)
 
 
+def generate_loading_screen():
+    total_boxes = 25
+    filled_boxes = random.randint(1, (total_boxes - 1))
+    loading_bar = '[' + '█' * filled_boxes + ' ' * (total_boxes - filled_boxes) + ']'
+    load_screen = f"Loading {loading_bar} {int((filled_boxes / total_boxes) * 100)}%"
+    return load_screen
+
 # Initialize the OpenAI client with an API key
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
@@ -124,8 +148,9 @@ if st.session_state["agent_running"]:
         if os.path.exists(text_file_path):
             with open(text_file_path, "r") as file:
                 text_content = file.read()
+            text_content = generate_loading_screen() + "\n\n" + text_content
             st.code(remove_color_codes(text_content))
-        time.sleep(2)
+        time.sleep(1)
 
         st.rerun()
     else:
@@ -137,9 +162,28 @@ if st.session_state["agent_running"]:
         )
 
         # print final result
-        final_report = docs["json"]["output"]["result"]["final_output"]
-        final_report = clean_text(final_report)
-        st.session_state.messages.append({"role": "system", "content": final_report})
+        try:
+            final_report = clean_text(docs["json"]["output"]["result"]["final_output"])
+            st.session_state.messages.append(
+                {"role": "system", "content": final_report}
+            )
+        except Exception as err:
+            print("---> ERROR LOADING FINAL REPORT:", err)
+            text_file_path = st.session_state["init_agent_output"]["paths"]["text"]
+            if os.path.exists(text_file_path):
+                with open(text_file_path, "r") as file:
+                    text_content = file.read()
+                st.session_state.messages.append(
+                    {"role": "system", "content": text_content}
+                )
+            try:
+                error_msg = docs["json"]["error"]
+            except:
+                error_msg = str(err)
+
+            st.session_state.messages.append(
+                {"role": "system", "content": "Job Completely Failed Due To: {error_msg}"}
+            )
 
         st.session_state["agent_done"] = True
         st.rerun()
@@ -160,7 +204,7 @@ if not st.session_state["submitted"] and not st.session_state["run_agent"]:
         and not st.session_state["run_agent"]
     ):
         if not st.session_state["website"]:
-            st.warning("ENTER A WEBSITE BEFORE ATTEMPTING!", icon="⚠️")
+            st.warning("Please Enter A Valid Website (URL)", icon="⚠️")
         else:
             first_prompt = f"""
 ### Website to Analyze:
