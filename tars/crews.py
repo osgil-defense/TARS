@@ -64,9 +64,7 @@ def call_crew(user_question):
     # crew = testCrew()
 
     if crew == None:
-        raise Exception(
-            f"User request does not aligh with a valid category"
-        )
+        raise Exception(f"User request does not aligh with a valid category")
 
     start_time = time.time()
     result = crew.kickoff()

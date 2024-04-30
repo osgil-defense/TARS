@@ -38,8 +38,9 @@ RUN pip3 install -r /root/requirements.txt
 
 WORKDIR /root/tars/
 
+# ## none-api mode (just shell mode)
 # CMD ["bash"]
 
+## api mode
 EXPOSE 8501
-
 ENTRYPOINT ["/bin/bash", "-c", "source /root/.env && exec streamlit run /root/tars/frontend.py --server.port=8501 --server.address=0.0.0.0"]

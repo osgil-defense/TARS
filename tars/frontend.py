@@ -5,13 +5,13 @@ When I wrote this code, only God and I knew how it worked.
 Now, only God knows!
 
 Streamlit is a shit product, don't use it. But we are too,
-deep into this now to change this. Maybe in another life.
+deep into this now to change switch. Maybe in another life.
 
 So if you are trying to optimize this routine and fail,
 (very likely) please increase the following counter
 as a warning to the next developer:
 
-total_hours_lost_here = 18
+total_hours_lost_here = 20
 """
 
 import streamlit as st
@@ -107,12 +107,19 @@ def remove_color_codes(text):
     return ansi_escape.sub("", text)
 
 
-def generate_loading_screen():
-    total_boxes = 25
-    filled_boxes = random.randint(1, (total_boxes - 1))
-    loading_bar = '[' + '█' * filled_boxes + ' ' * (total_boxes - filled_boxes) + ']'
-    load_screen = f"Loading {loading_bar} {int((filled_boxes / total_boxes) * 100)}%"
-    return load_screen
+def generate_loading_screen(normal_true=True):
+    total_boxes = 100
+    if normal_true:
+        filled_boxes = random.randint(1, (total_boxes - 1))
+        loading_bar = (
+            "[" + "█" * filled_boxes + " " * (total_boxes - filled_boxes) + "]"
+        )
+        return f"Loading {loading_bar} {int((filled_boxes / total_boxes) * 100)}%"
+    else:
+        assets = "⡀⡁⡂⡃⡄⡅⡆⡇⡈⡉⡊⡋⡌⡍⡎⡏⡐⡑⡒⡓⡔⡕⡖⡗⡘⡙⡚⡛⡜⡝⡞⡟⡠⡡⡢⡣⡤⡥⡦⡧⡨⡩⡪⡫⡬⡭⡮⡯⡰⡱⡲⡳⡴⡵⡶⡷⡸⡹⡺⡻⡼⡽⡾⡿⢀⢁⢂⢃⢄⢅⢆⢇⢈⢉⢊⢋⢌⢍⢎⢏⢐⢑⢒⢓⢔⢕⢖⢗⢘⢙⢚⢛⢜⢝⢞⢟⢠⢡⢢⢣⢤⢥⢦⢧⢨⢩⢪⢫⢬⢭⢮⢯⢰⢱⢲⢳⢴⢵⢶⢷⢸⢹⢺⢻⢼⢽⢾⢿⣀⣁⣂⣃⣄⣅⣆⣇⣈⣉⣊⣋⣌⣍⣎⣏⣐⣑⣒⣓⣔⣕⣖⣗⣘⣙⣚⣛⣜⣝⣞⣟⣠⣡⣢⣣⣤⣥⣦⣧⣨⣩⣪⣫⣬⣭⣮⣯⣰⣱⣲⣳⣴⣵⣶⣷⣸⣹⣺⣻⣼⣽⣾⣿"
+        assets = list(assets)
+        return "".join(random.sample(assets, total_boxes))
+
 
 # Initialize the OpenAI client with an API key
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
@@ -133,7 +140,7 @@ if "submitted" not in st.session_state:
     st.session_state["job_failed"] = False
 
 
-st.markdown("<h1 style='text-align: center;'>Medusa</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>TARS</h1>", unsafe_allow_html=True)
 
 st.write("\n")
 st.image(image="logo.png")
@@ -149,7 +156,7 @@ if st.session_state["agent_running"]:
         if os.path.exists(text_file_path):
             with open(text_file_path, "r") as file:
                 text_content = file.read()
-            text_content = generate_loading_screen() + "\n\n" + text_content
+            text_content = generate_loading_screen(False) + "\n\n" + text_content
             st.code(remove_color_codes(text_content))
         time.sleep(1)
 
@@ -184,7 +191,10 @@ if st.session_state["agent_running"]:
                 error_msg = str(err)
 
             st.session_state.messages.append(
-                {"role": "system", "content": f"Job Completely Failed Due To: {error_msg}"}
+                {
+                    "role": "system",
+                    "content": f"Job Completely Failed Due To: {error_msg}",
+                }
             )
 
             st.session_state.messages.append(
@@ -247,7 +257,11 @@ for message in st.session_state["messages"]:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-if st.session_state["submitted"] and st.session_state["agent_done"] and not st.session_state["job_failed"]:
+if (
+    st.session_state["submitted"]
+    and st.session_state["agent_done"]
+    and not st.session_state["job_failed"]
+):
     # Chat input for interaction
     prompt = st.chat_input("Ask about the commands executed")
     if prompt:

@@ -8,6 +8,7 @@ from crewai_tools import (
 from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_openai import ChatOpenAI
 from subprocess import Popen, PIPE
+import config
 import sys
 import os
 
@@ -22,7 +23,7 @@ As an expert network penetration tester, you specialize in simulating cyber atta
 """,
     verbose=True,
     allow_delegation=False,
-    llm=ChatOpenAI(model="gpt-4-turbo-2024-04-09"),
+    llm=ChatOpenAI(model=config.best_gpt_model),
     tools=[
         nettacker.get_nettacker_docs,
         nettacker.nettacker,
@@ -31,8 +32,6 @@ As an expert network penetration tester, you specialize in simulating cyber atta
         rustscan.rustscan,
         rustscan.rustscan_docs,
         helpers.ping_ip,
-        helpers.nmap,
-        helpers.my_ip,
     ],
 )
 
@@ -42,7 +41,7 @@ ResearcherAgent = Agent(
     backstory="An expert analyst with a keep eye for cybersecurity and finding ways/sources to fix any cybersecurity issue/vulnerability",
     verbose=True,
     allow_delegation=False,
-    llm=ChatOpenAI(model="gpt-4-turbo-2024-04-09"),
+    llm=ChatOpenAI(model=config.best_gpt_model),
     tools=[
         scrapper.crawl_website_urls,
         scrapper.scrape_website,
@@ -58,7 +57,7 @@ WriterAgent = Agent(
     backstory="A skilled Report Writer with a passion for writing the best Reports given the content/research presented to them",
     verbose=True,
     allow_delegation=False,
-    llm=ChatOpenAI(model="gpt-4-turbo-2024-04-09"),
+    llm=ChatOpenAI(model=config.best_gpt_model),
     tools=[helpers.current_utc_timestamp],
 )
 
@@ -73,6 +72,6 @@ MakeMarkDownAgent = Agent(
     ),
     verbose=True,
     allow_delegation=False,
-    llm=ChatOpenAI(model="gpt-4-turbo-2024-04-09"),
+    llm=ChatOpenAI(model=config.best_gpt_model),
     tools=[],
 )
