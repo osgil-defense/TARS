@@ -71,6 +71,25 @@ def clean_text(text):
     return cleaned_text.strip()
 
 
+# source: https://stackoverflow.com/a/14693789
+def remove_color_codes(text):
+    ansi_escape = re.compile(
+        r"""
+        \x1B  # ESC
+        (?:   # 7-bit C1 Fe (except CSI)
+            [@-Z\\-_]
+        |     # or [ for CSI, followed by a control sequence
+            \[
+            [0-?]*  # Parameter bytes
+            [ -/]*  # Intermediate bytes
+            [@-~]   # Final byte
+        )
+    """,
+        re.VERBOSE,
+    )
+    return ansi_escape.sub("", text)
+
+
 # Initialize the OpenAI client with an API key
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
@@ -102,22 +121,23 @@ def stream_data():
         max_i = st.session_state.get("stream_max_i", 0)
         if agent_running(aid)["status"]:
             for i in range(max_i, len(text_content) - 1):
-                yield text_content[i] + " "
+                yield remove_color_codes(text_content[i] + " ")
                 time.sleep(0.02)
-                # Update max_i safely within the bounds of text_content
+
+                # update max_i safely within the bounds of text_content
                 st.session_state["stream_max_i"] = min(i + 1, len(text_content) - 1)
 
-            # Reset the stream_max_i to allow repeating or restarting the stream if needed
+            # reset the stream_max_i to allow repeating or restarting the stream if needed
             st.session_state["stream_max_i"] = 0
     else:
-        # Log or handle the case where the file path does not exist
+        # log or handle the case where the file path does not exist
         yield "Waiting for text data..."
 
 
 # Page configuration and layout
 st.set_page_config(page_title="Medusa - Beta")
 st.markdown("<h1 style='text-align: center;'>Medusa</h1>", unsafe_allow_html=True)
-# st.image(image="logo.jpg")
+st.image(image="logo.jpg")
 
 # User input form
 if not st.session_state["submitted"] and not st.session_state["run_agent"]:
@@ -190,11 +210,6 @@ if st.session_state["agent_running"]:
             st.session_state["init_agent_output"]["paths"]["json"],
         )
 
-        # # TODO: remove after testing
-        # print("====FINAL_REPORT=====")
-        # print(docs["json"]["output"]["result"])
-        # print("====FINAL_REPORT=====")
-
         # print final result
         final_report = docs["json"]["output"]["result"]["final_output"]
         final_report = clean_text(final_report)
@@ -207,10 +222,6 @@ if st.session_state["submitted"] and st.session_state["agent_done"]:
     # Chat input for interaction
     prompt = st.chat_input("Ask about the commands executed")
     if prompt:
-        # # TODO: remove after testing
-        # print(st.session_state.messages)
-        # print()
-
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
