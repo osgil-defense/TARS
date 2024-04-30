@@ -110,7 +110,9 @@ if "submitted" not in st.session_state:
 # TODO: this needs refinement!
 def stream_data():
     aid = st.session_state.get("init_agent_output", {}).get("id", None)
-    text_file_path = st.session_state.get("init_agent_output", {}).get("paths", {}).get("text", None)
+    text_file_path = (
+        st.session_state.get("init_agent_output", {}).get("paths", {}).get("text", None)
+    )
 
     if text_file_path and os.path.exists(text_file_path):
         with open(text_file_path, "r") as file:
@@ -138,13 +140,13 @@ def stream_data():
 # Page configuration and layout
 st.set_page_config(page_title="Medusa - Beta")
 st.markdown("<h1 style='text-align: center;'>Medusa</h1>", unsafe_allow_html=True)
-st.image(image="logo.jpg")
+st.image(image="logo.png")
 
 # User input form
 if not st.session_state["submitted"] and not st.session_state["run_agent"]:
     with st.form("my_form"):
         st.session_state["website"] = st.text_input(
-            "Website To Test", st.session_state["website"]
+            "What's Your Target Website/Network Address?", st.session_state["website"]
         )
         text = st.text_area("What Cybersecurity-Related Task Do You Want To Do?", "")
         submitted = st.form_submit_button("Submit")
