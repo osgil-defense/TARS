@@ -7,6 +7,8 @@ import uuid
 import shlex
 import sys
 import os
+import re
+
 
 def run_agents(user_question):
     # TODO: this might not be that good...
@@ -16,7 +18,7 @@ def run_agents(user_question):
     clid = f"{uuid.uuid4()}_{int(time.time())}"
     cli_id = shlex.quote(f"{clid}")
     user_question = shlex.quote(user_question)
-    
+
     cmd = f"python3 {cli_filepath} --current_job_id {cli_id} --user_question {user_question} --events_directory {events_dir} &"
 
     os.system(cmd)
@@ -25,9 +27,10 @@ def run_agents(user_question):
         "id": clid,
         "paths": {
             "text": os.path.join(events_dir, f"{cli_id}.txt"),
-            "json": os.path.join(events_dir, f"{cli_id}.json")
-        }
+            "json": os.path.join(events_dir, f"{cli_id}.json"),
+        },
     }
+
 
 def agent_running(id):
     command = f"ps aux | grep {id} | grep 'python' | grep -v 'grep'"
@@ -37,9 +40,7 @@ def agent_running(id):
 
     pid = None
     try:
-        pid = int(
-            [item for item in output.split(" ") if item][1]
-        )
+        pid = int([item for item in output.split(" ") if item][1])
     except:
         pass
 
@@ -47,26 +48,46 @@ def agent_running(id):
     if len(output) == 0:
         running = False
 
-    return {
-        "pid": pid,
-        "status": running
-    }
+    return {"pid": pid, "status": running}
+
 
 def load_agent_content(text_path=None, json_path=None):
-    output = {
-        "text": None,
-        "json": None
-    }
+    output = {"text": None, "json": None}
 
     if text_path != None and os.path.exists(text_path):
         with open(text_path, "r") as file:
             output["text"] = file.read()
-    
+
     if json_path != None and os.path.exists(json_path):
-        with open(json_path, 'r') as f:
+        with open(json_path, "r") as f:
             output["json"] = json.load(f)
-    
+
     return output
+
+
+def clean_text(text):
+    cleaned_text = re.sub(r"^(```markdown|```md|```)\s*", "", text, flags=re.IGNORECASE)
+    cleaned_text = re.sub(r"```$", "", cleaned_text)
+    return cleaned_text.strip()
+
+
+# source: https://stackoverflow.com/a/14693789
+def remove_color_codes(text):
+    ansi_escape = re.compile(
+        r"""
+        \x1B  # ESC
+        (?:   # 7-bit C1 Fe (except CSI)
+            [@-Z\\-_]
+        |     # or [ for CSI, followed by a control sequence
+            \[
+            [0-?]*  # Parameter bytes
+            [ -/]*  # Intermediate bytes
+            [@-~]   # Final byte
+        )
+    """,
+        re.VERBOSE,
+    )
+    return ansi_escape.sub("", text)
 
 
 # Initialize the OpenAI client with an API key
@@ -83,17 +104,49 @@ if "submitted" not in st.session_state:
     st.session_state["agent_running"] = False
     st.session_state["init_agent_output"] = {}
     st.session_state["agent_done"] = False
+    st.session_state["stream_max_i"] = -1
+
+
+# TODO: this needs refinement!
+def stream_data():
+    aid = st.session_state.get("init_agent_output", {}).get("id", None)
+    text_file_path = (
+        st.session_state.get("init_agent_output", {}).get("paths", {}).get("text", None)
+    )
+
+    if text_file_path and os.path.exists(text_file_path):
+        with open(text_file_path, "r") as file:
+            text_content = file.read().split()
+
+        max_i = st.session_state.get("stream_max_i", 0)
+        current_max = len(text_content) - 1
+
+        if max_i < current_max:
+            if agent_running(aid)["status"]:
+                for i in range(max_i, current_max):
+                    yield remove_color_codes(text_content[i] + " ")
+                    time.sleep(0.02)
+                    # Update max_i for the next item, making sure we don't go out of bounds
+                    st.session_state["stream_max_i"] = i + 1
+
+        # If agent is done and all text has been streamed, reset the index to allow for a restart if necessary
+        if not agent_running(aid)["status"]:
+            st.session_state["stream_max_i"] = 0
+    else:
+        # Handle the case where the file path does not exist or no text data is available yet
+        yield "Waiting for text data..."
+
 
 # Page configuration and layout
 st.set_page_config(page_title="Medusa - Beta")
 st.markdown("<h1 style='text-align: center;'>Medusa</h1>", unsafe_allow_html=True)
-# st.image(image="logo.jpg")
+st.image(image="logo.png")
 
 # User input form
-if not st.session_state["submitted"]:
+if not st.session_state["submitted"] and not st.session_state["run_agent"]:
     with st.form("my_form"):
         st.session_state["website"] = st.text_input(
-            "Website To Test", st.session_state["website"]
+            "What's Your Target Website/Network Address?", st.session_state["website"]
         )
         text = st.text_area("What Cybersecurity-Related Task Do You Want To Do?", "")
         submitted = st.form_submit_button("Submit")
@@ -142,27 +195,28 @@ if st.session_state["agent_running"]:
     print("===> astatus: ", astatus)
     if astatus["status"] == True:
         print(f"Agent id {aid} is still running...")
-        st.session_state.messages.append(
-            {"role": "system", "content": "Running..."}
-        )
-        time.sleep(2)
+
+        # TODO: this needs refinement!
+        col1, col2, col3 = st.columns([1, 1, 12])
+        with col3:
+            with st.status("Processing..."):
+                # st.write("Crew(s) can take anywhere from 30 seconds to 10 minutes to run")
+                st.write_stream(stream_data)
+                # time.sleep(10)
+
         st.rerun()
     else:
         print(f"Agent id {aid} is DONE!")
         st.session_state["agent_running"] = False
         docs = load_agent_content(
             st.session_state["init_agent_output"]["paths"]["text"],
-            st.session_state["init_agent_output"]["paths"]["json"]
+            st.session_state["init_agent_output"]["paths"]["json"],
         )
 
-        print("====FINAL_REPORT=====")
-        print(docs["json"]["output"]["result"])
-        print("====FINAL_REPORT=====")
-        
         # print final result
-        st.session_state.messages.append(
-            {"role": "system", "content": docs["json"]["output"]["result"]["final_output"]}
-        )
+        final_report = docs["json"]["output"]["result"]["final_output"]
+        final_report = clean_text(final_report)
+        st.session_state.messages.append({"role": "system", "content": final_report})
 
         st.session_state["agent_done"] = True
         st.rerun()
@@ -171,10 +225,6 @@ if st.session_state["submitted"] and st.session_state["agent_done"]:
     # Chat input for interaction
     prompt = st.chat_input("Ask about the commands executed")
     if prompt:
-        # # TODO: remove after testing
-        # print(st.session_state.messages)
-        # print()
-
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
