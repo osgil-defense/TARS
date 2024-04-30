@@ -5,7 +5,6 @@ from crewai_tools import (
     WebsiteSearchTool,
 )
 
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_openai import ChatOpenAI
 from subprocess import Popen, PIPE
@@ -69,6 +68,6 @@ MakeMarkDownAgent = Agent(
     ),
     verbose=True,
     allow_delegation=False,
-    llm=ChatGoogleGenerativeAI(model="gemini-pro", verbose=True, temperature=0.25),
+    llm=ChatOpenAI(model="gpt-4-turbo-2024-04-09"),
     tools=[],
 )

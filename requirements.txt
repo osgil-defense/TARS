@@ -8,7 +8,6 @@ langchain==0.1.16
 langchain-community==0.0.34
 langchain-core==0.1.45
 langchain-experimental==0.0.57
-langchain-google-genai==1.0.1
 langchain-openai==0.0.5
 langchain-text-splitters==0.0.1
 langsmith==0.1.49
