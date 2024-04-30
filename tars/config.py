@@ -1,4 +1,6 @@
-router_model_name = "gpt-3.5-turbo-0125"
+best_gpt_model = "gpt-4-turbo-2024-04-09"
+
+router_model_name = best_gpt_model
 
 router_config = {
     "default_none": "None",

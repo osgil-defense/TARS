@@ -1,6 +1,5 @@
 env/
 docs/
-.env
 tars/db/
 .git/
 

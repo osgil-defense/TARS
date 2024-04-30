@@ -1,6 +1,23 @@
+"""
+Dear Programmer:
+
+When I wrote this code, only God and I knew how it worked.
+Now, only God knows!
+
+Streamlit is a shit product, don't use it. But we are too,
+deep into this now to change switch. Maybe in another life.
+
+So if you are trying to optimize this routine and fail,
+(very likely) please increase the following counter
+as a warning to the next developer:
+
+total_hours_lost_here = 20
+"""
+
 import streamlit as st
 from openai import OpenAI
 import subprocess
+import random
 import time
 import json
 import uuid
@@ -90,6 +107,20 @@ def remove_color_codes(text):
     return ansi_escape.sub("", text)
 
 
+def generate_loading_screen(normal_true=True):
+    total_boxes = 100
+    if normal_true:
+        filled_boxes = random.randint(1, (total_boxes - 1))
+        loading_bar = (
+            "[" + "█" * filled_boxes + " " * (total_boxes - filled_boxes) + "]"
+        )
+        return f"Loading {loading_bar} {int((filled_boxes / total_boxes) * 100)}%"
+    else:
+        assets = "⡀⡁⡂⡃⡄⡅⡆⡇⡈⡉⡊⡋⡌⡍⡎⡏⡐⡑⡒⡓⡔⡕⡖⡗⡘⡙⡚⡛⡜⡝⡞⡟⡠⡡⡢⡣⡤⡥⡦⡧⡨⡩⡪⡫⡬⡭⡮⡯⡰⡱⡲⡳⡴⡵⡶⡷⡸⡹⡺⡻⡼⡽⡾⡿⢀⢁⢂⢃⢄⢅⢆⢇⢈⢉⢊⢋⢌⢍⢎⢏⢐⢑⢒⢓⢔⢕⢖⢗⢘⢙⢚⢛⢜⢝⢞⢟⢠⢡⢢⢣⢤⢥⢦⢧⢨⢩⢪⢫⢬⢭⢮⢯⢰⢱⢲⢳⢴⢵⢶⢷⢸⢹⢺⢻⢼⢽⢾⢿⣀⣁⣂⣃⣄⣅⣆⣇⣈⣉⣊⣋⣌⣍⣎⣏⣐⣑⣒⣓⣔⣕⣖⣗⣘⣙⣚⣛⣜⣝⣞⣟⣠⣡⣢⣣⣤⣥⣦⣧⣨⣩⣪⣫⣬⣭⣮⣯⣰⣱⣲⣳⣴⣵⣶⣷⣸⣹⣺⣻⣼⣽⣾⣿"
+        assets = list(assets)
+        return "".join(random.sample(assets, total_boxes))
+
+
 # Initialize the OpenAI client with an API key
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
@@ -105,42 +136,75 @@ if "submitted" not in st.session_state:
     st.session_state["init_agent_output"] = {}
     st.session_state["agent_done"] = False
     st.session_state["stream_max_i"] = -1
+    st.session_state["agent_words_gened"] = 0
+    st.session_state["job_failed"] = False
 
 
-# TODO: this needs refinement!
-def stream_data():
-    aid = st.session_state.get("init_agent_output", {}).get("id", None)
-    text_file_path = (
-        st.session_state.get("init_agent_output", {}).get("paths", {}).get("text", None)
-    )
+st.markdown("<h1 style='text-align: center;'>TARS</h1>", unsafe_allow_html=True)
 
-    if text_file_path and os.path.exists(text_file_path):
-        with open(text_file_path, "r") as file:
-            text_content = file.read().split()
-
-        max_i = st.session_state.get("stream_max_i", 0)
-        current_max = len(text_content) - 1
-
-        if max_i < current_max:
-            if agent_running(aid)["status"]:
-                for i in range(max_i, current_max):
-                    yield remove_color_codes(text_content[i] + " ")
-                    time.sleep(0.02)
-                    # Update max_i for the next item, making sure we don't go out of bounds
-                    st.session_state["stream_max_i"] = i + 1
-
-        # If agent is done and all text has been streamed, reset the index to allow for a restart if necessary
-        if not agent_running(aid)["status"]:
-            st.session_state["stream_max_i"] = 0
-    else:
-        # Handle the case where the file path does not exist or no text data is available yet
-        yield "Waiting for text data..."
-
-
-# Page configuration and layout
-st.set_page_config(page_title="Medusa - Beta")
-st.markdown("<h1 style='text-align: center;'>Medusa</h1>", unsafe_allow_html=True)
+st.write("\n")
 st.image(image="logo.png")
+st.write("\n")
+
+if st.session_state["agent_running"]:
+    aid = st.session_state["init_agent_output"]["id"]
+    astatus = agent_running(aid)
+    print("===> astatus: ", astatus)
+    if astatus["status"] == True:
+        print(f"Agent id {aid} is still running...")
+        text_file_path = st.session_state["init_agent_output"]["paths"]["text"]
+        if os.path.exists(text_file_path):
+            with open(text_file_path, "r") as file:
+                text_content = file.read()
+            text_content = generate_loading_screen(False) + "\n\n" + text_content
+            st.code(remove_color_codes(text_content))
+        time.sleep(1)
+
+        st.rerun()
+    else:
+        print(f"Agent id {aid} is DONE!")
+        st.session_state["agent_running"] = False
+        docs = load_agent_content(
+            st.session_state["init_agent_output"]["paths"]["text"],
+            st.session_state["init_agent_output"]["paths"]["json"],
+        )
+
+        # print final result
+        try:
+            final_report = clean_text(docs["json"]["output"]["result"]["final_output"])
+            st.session_state.messages.append(
+                {"role": "system", "content": final_report}
+            )
+        except Exception as err:
+            print("---> ERROR LOADING FINAL REPORT:", err)
+            text_file_path = st.session_state["init_agent_output"]["paths"]["text"]
+            if os.path.exists(text_file_path):
+                with open(text_file_path, "r") as file:
+                    text_content = file.read()
+                if len(text_content) > 0:
+                    st.session_state.messages.append(
+                        {"role": "system", "content": text_content}
+                    )
+            try:
+                error_msg = docs["json"]["error"]
+            except:
+                error_msg = str(err)
+
+            st.session_state.messages.append(
+                {
+                    "role": "system",
+                    "content": f"Job Completely Failed Due To: {error_msg}",
+                }
+            )
+
+            st.session_state.messages.append(
+                {"role": "system", "content": f"🚨 Try Again By Refreshing The Page 🚨"}
+            )
+
+            st.session_state["job_failed"] = True
+
+        st.session_state["agent_done"] = True
+        st.rerun()
 
 # User input form
 if not st.session_state["submitted"] and not st.session_state["run_agent"]:
@@ -152,31 +216,30 @@ if not st.session_state["submitted"] and not st.session_state["run_agent"]:
         submitted = st.form_submit_button("Submit")
 
     # Handle form submission
-    if submitted and not st.session_state["submitted"]:
-        st.session_state["submitted"] = True
+    if (
+        submitted
+        and not st.session_state["submitted"]
+        and not st.session_state["run_agent"]
+    ):
         if not st.session_state["website"]:
-            st.warning("ENTER A WEBSITE BEFORE ATTEMPTING!", icon="⚠️")
+            st.warning("Please Enter A Valid Website (URL)", icon="⚠️")
         else:
             first_prompt = f"""
-Website to Analyze: {st.session_state["website"]}
+### Website to Analyze:
 
-Task Description:
+{st.session_state["website"]}
+
+### Task Description:
+
 {text}
 """
             st.session_state["sys_prompt"] = first_prompt
             st.session_state.messages.append(
                 {"role": "system", "content": st.session_state["sys_prompt"]}
             )
-
-    if st.session_state["submitted"]:
-        st.session_state["run_agent"] = True
-        st.rerun()
-
-
-# Display messages from session state
-for message in st.session_state["messages"]:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+            st.session_state["submitted"] = True
+            st.session_state["run_agent"] = True
+            st.rerun()
 
 if st.session_state["run_agent"] == True:
     init_agent_output = run_agents(st.session_state["sys_prompt"])
@@ -189,39 +252,16 @@ if st.session_state["run_agent"] == True:
     print()
     st.rerun()
 
-if st.session_state["agent_running"]:
-    aid = st.session_state["init_agent_output"]["id"]
-    astatus = agent_running(aid)
-    print("===> astatus: ", astatus)
-    if astatus["status"] == True:
-        print(f"Agent id {aid} is still running...")
+# Display messages from session state
+for message in st.session_state["messages"]:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-        # TODO: this needs refinement!
-        col1, col2, col3 = st.columns([1, 1, 12])
-        with col3:
-            with st.status("Processing..."):
-                # st.write("Crew(s) can take anywhere from 30 seconds to 10 minutes to run")
-                st.write_stream(stream_data)
-                # time.sleep(10)
-
-        st.rerun()
-    else:
-        print(f"Agent id {aid} is DONE!")
-        st.session_state["agent_running"] = False
-        docs = load_agent_content(
-            st.session_state["init_agent_output"]["paths"]["text"],
-            st.session_state["init_agent_output"]["paths"]["json"],
-        )
-
-        # print final result
-        final_report = docs["json"]["output"]["result"]["final_output"]
-        final_report = clean_text(final_report)
-        st.session_state.messages.append({"role": "system", "content": final_report})
-
-        st.session_state["agent_done"] = True
-        st.rerun()
-
-if st.session_state["submitted"] and st.session_state["agent_done"]:
+if (
+    st.session_state["submitted"]
+    and st.session_state["agent_done"]
+    and not st.session_state["job_failed"]
+):
     # Chat input for interaction
     prompt = st.chat_input("Ask about the commands executed")
     if prompt:
