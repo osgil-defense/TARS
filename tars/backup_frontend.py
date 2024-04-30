@@ -120,12 +120,16 @@ if st.session_state["agent_running"]:
     print("===> astatus: ", astatus)
     if astatus["status"] == True:
         print(f"Agent id {aid} is still running...")
-        text_file_path = st.session_state["init_agent_output"]["paths"]["text"]
-        if os.path.exists(text_file_path):
-            with open(text_file_path, "r") as file:
-                text_content = file.read()
-            st.code(remove_color_codes(text_content))
-        time.sleep(2)
+
+        with st.status("Processing..."):
+            text_file_path = st.session_state["init_agent_output"]["paths"]["text"]
+            if os.path.exists(text_file_path):
+                with open(text_file_path, "r") as file:
+                    text_content = file.read().split()
+                if len(text_content) > st.session_state["agent_words_gened"]:
+                    st.session_state["agent_words_gened"] = len(text_content)
+                    st.write(f"Crew report has reached {len(text_content)} words")
+            time.sleep(3)
 
         st.rerun()
     else:

@@ -36,7 +36,10 @@ RUN ln -s /opt/nettacker/nettacker.py /usr/local/bin/nettacker
 COPY . /root/
 RUN pip3 install -r /root/requirements.txt
 
-WORKDIR /root/
+WORKDIR /root/tars/
 
-CMD ["bash"]
+# CMD ["bash"]
 
+EXPOSE 8501
+
+ENTRYPOINT ["/bin/bash", "-c", "source /root/.env && exec streamlit run /root/tars/frontend.py --server.port=8501 --server.address=0.0.0.0"]
