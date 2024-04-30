@@ -130,6 +130,7 @@ if "submitted" not in st.session_state:
     st.session_state["agent_done"] = False
     st.session_state["stream_max_i"] = -1
     st.session_state["agent_words_gened"] = 0
+    st.session_state["job_failed"] = False
 
 
 st.markdown("<h1 style='text-align: center;'>Medusa</h1>", unsafe_allow_html=True)
@@ -173,17 +174,24 @@ if st.session_state["agent_running"]:
             if os.path.exists(text_file_path):
                 with open(text_file_path, "r") as file:
                     text_content = file.read()
-                st.session_state.messages.append(
-                    {"role": "system", "content": text_content}
-                )
+                if len(text_content) > 0:
+                    st.session_state.messages.append(
+                        {"role": "system", "content": text_content}
+                    )
             try:
                 error_msg = docs["json"]["error"]
             except:
                 error_msg = str(err)
 
             st.session_state.messages.append(
-                {"role": "system", "content": "Job Completely Failed Due To: {error_msg}"}
+                {"role": "system", "content": f"Job Completely Failed Due To: {error_msg}"}
             )
+
+            st.session_state.messages.append(
+                {"role": "system", "content": f"🚨 Try Again By Refreshing The Page 🚨"}
+            )
+
+            st.session_state["job_failed"] = True
 
         st.session_state["agent_done"] = True
         st.rerun()
@@ -239,7 +247,7 @@ for message in st.session_state["messages"]:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-if st.session_state["submitted"] and st.session_state["agent_done"]:
+if st.session_state["submitted"] and st.session_state["agent_done"] and not st.session_state["job_failed"]:
     # Chat input for interaction
     prompt = st.chat_input("Ask about the commands executed")
     if prompt:

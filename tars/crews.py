@@ -60,12 +60,12 @@ def call_crew(user_question):
     if "Network" in prompt_router:
         crew = networkPentTester(question)
 
-    # TODO: remove after testing
-    crew = testCrew()
+    # # TODO: remove after testing
+    # crew = testCrew()
 
     if crew == None:
         raise Exception(
-            f"User question ({user_question}) does not aligh with a valid category"
+            f"User request does not aligh with a valid category"
         )
 
     start_time = time.time()
