@@ -58,10 +58,10 @@ def call_crew(user_question):
     crew = None
 
     if "Network" in prompt_router:
-        # crew = networkPentTester(question)
+        crew = networkPentTester(question)
 
         # TODO: remove after quick testing
-        crew = testCrew()
+        # crew = testCrew()
 
     if crew == None:
         raise Exception(
