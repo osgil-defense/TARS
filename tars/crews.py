@@ -57,14 +57,12 @@ def call_crew(user_question):
     question = user_question
     crew = None
 
+    # TODO: undo this after testing
     # if "Network" in prompt_router:
     #     # crew = networkPentTester(question)
 
-    #     # TODO: remove after quick testing
-    #     crew = testCrew()
-
     crew = testCrew()
-
+    
     if crew == None:
         raise Exception(
             f"User question ({user_question}) does not aligh with a valid category"
