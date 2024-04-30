@@ -4,6 +4,22 @@
 
 Create a tool to automate the process of pentesting, allowing pentesters to do more with less and in turn make the world more secure.
 
+## How To Run
+
+Build the image
+
+```
+docker build -t klinux .
+```
+
+Run the image as a container
+
+```
+docker run -p 8501:8501 klinux
+```
+
+Check out the app at: http://localhost:8501/
+
 ## Events
 
 (April 29, 2024) We are no longer participating in the Google Hackathon because Gemnei is a flawed LLM. GPT-4 seems to be the only LLM, right now, that works great for agents
@@ -23,6 +39,3 @@ Create a tool to automate the process of pentesting, allowing pentesters to do m
 - [ ] [wireshark](https://www.wireshark.org/)
 - [ ] [metasploit framework](https://www.metasploit.com/)
 
-<p align="center">
-    <img width=200 src="./assets/logo_v0.jpg">
-</p>
