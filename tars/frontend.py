@@ -110,27 +110,28 @@ if "submitted" not in st.session_state:
 # TODO: this needs refinement!
 def stream_data():
     aid = st.session_state.get("init_agent_output", {}).get("id", None)
-    text_file_path = (
-        st.session_state.get("init_agent_output", {}).get("paths", {}).get("text", None)
-    )
+    text_file_path = st.session_state.get("init_agent_output", {}).get("paths", {}).get("text", None)
 
     if text_file_path and os.path.exists(text_file_path):
         with open(text_file_path, "r") as file:
             text_content = file.read().split()
 
         max_i = st.session_state.get("stream_max_i", 0)
-        if agent_running(aid)["status"]:
-            for i in range(max_i, len(text_content) - 1):
-                yield remove_color_codes(text_content[i] + " ")
-                time.sleep(0.02)
+        current_max = len(text_content) - 1
 
-                # update max_i safely within the bounds of text_content
-                st.session_state["stream_max_i"] = min(i + 1, len(text_content) - 1)
+        if max_i < current_max:
+            if agent_running(aid)["status"]:
+                for i in range(max_i, current_max):
+                    yield remove_color_codes(text_content[i] + " ")
+                    time.sleep(0.02)
+                    # Update max_i for the next item, making sure we don't go out of bounds
+                    st.session_state["stream_max_i"] = i + 1
 
-            # reset the stream_max_i to allow repeating or restarting the stream if needed
+        # If agent is done and all text has been streamed, reset the index to allow for a restart if necessary
+        if not agent_running(aid)["status"]:
             st.session_state["stream_max_i"] = 0
     else:
-        # log or handle the case where the file path does not exist
+        # Handle the case where the file path does not exist or no text data is available yet
         yield "Waiting for text data..."
 
 
