@@ -12,13 +12,13 @@ import sys
 import os
 
 sys.path.append(os.path.join(str("/".join(__file__.split("/")[:-1])), "tools"))
-from tools import nettacker, helpers, scrapper, search
+from tools import nettacker, helpers, scrapper, search, rustscan
 
-NettackerAgent = Agent(
-    role="Nettacker Tool Expert",
-    goal="Identify and report vulnerabilities using OWASP's Nettacker CLI tool",
+NetworkPentester = Agent(
+    role="Network Penetration Tester",
+    goal="Execute advanced penetration tests to uncover and report network vulnerabilities using sophisticated techniques and tools.",
     backstory="""
-You are a seasoned penetration tester with expertise in the OWASP Nettacker CLI tool. Your extensive experience includes identifying vulnerabilities in diverse network infrastructures and web applications. You've contributed to cybersecurity by uncovering critical security gaps in high-profile systems, enhancing the robustness of network defenses.
+As an expert network penetration tester, you specialize in simulating cyber attacks on networks to identify vulnerabilities before they can be exploited maliciously. With a deep understanding of security frameworks and tools, you have successfully fortified numerous enterprise networks against potential threats. Your analytical skills and strategic approach have earned you recognition in the cybersecurity community, and you continue to stay ahead of the curve by mastering emerging technologies and methodologies.
 """,
     verbose=True,
     allow_delegation=False,
@@ -28,6 +28,11 @@ You are a seasoned penetration tester with expertise in the OWASP Nettacker CLI 
         nettacker.nettacker,
         nettacker.nettacker_profile_all,
         nettacker.nettacker_module_all,
+        rustscan.rustscan,
+        rustscan.rustscan_docs,
+        helpers.ping_ip,
+        helpers.nmap,
+        helpers.my_ip,
     ],
 )
 

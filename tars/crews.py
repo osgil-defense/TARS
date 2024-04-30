@@ -16,13 +16,13 @@ import config
 def networkPentTester(question):
     return Crew(
         agents=[
-            agents.NettackerAgent,
+            agents.NetworkPentester,
             agents.ResearcherAgent,
             agents.WriterAgent,
             agents.MakeMarkDownAgent,
         ],
         tasks=[
-            dynamic_tasks.pentest_task(question, agents.NettackerAgent),
+            dynamic_tasks.pentest_task(question, agents.NetworkPentester),
             tasks.cybersecurity_research,
             tasks.build_cybersecurity_report,
             tasks.convert_report_to_markdown,
@@ -57,12 +57,12 @@ def call_crew(user_question):
     question = user_question
     crew = None
 
-    # TODO: undo this after testing
-    # if "Network" in prompt_router:
-    #     # crew = networkPentTester(question)
+    if "Network" in prompt_router:
+        crew = networkPentTester(question)
 
+    # TODO: remove after testing
     crew = testCrew()
-    
+
     if crew == None:
         raise Exception(
             f"User question ({user_question}) does not aligh with a valid category"
