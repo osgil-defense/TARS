@@ -8,6 +8,11 @@ RUN apt-get install -y wget
 RUN apt-get install -y nmap sqlmap autopsy john
 RUN apt-get install -y vim python3-pip git python-is-python3
 
+# install zaproxy stuff
+RUN apt-get install -y zaproxy
+RUN apt-get install -y docker.io
+RUN pip install zaproxy
+
 # install Google Chrome
 WORKDIR /home/
 RUN apt-get update && apt-get install -y wget gnupg2 software-properties-common
