@@ -13,7 +13,27 @@ import sys
 import os
 
 sys.path.append(os.path.join(str("/".join(__file__.split("/")[:-1])), "tools"))
-from tools import nettacker, helpers, scrapper, search, rustscan
+from tools import nettacker, helpers, scrapper, search, rustscan, zaproxy
+
+# NOTE: (5-3-2024) I did not give this agent access to a full scan tool(s)
+WebAppPentester = Agent(
+    role="Web Application Penetration Tester",
+    goal="Perform comprehensive penetration tests on web applications to uncover and report vulnerabilities using advanced techniques and a variety of security tools.",
+    backstory="""
+As a seasoned web application penetration tester, you excel at simulating cyber attacks to pinpoint weaknesses in web applications. With extensive knowledge of web technologies and security practices, you have safeguarded numerous applications from potential threats. Your ability to think like a hacker and apply rigorous testing methodologies makes you a valuable asset in the cybersecurity field. You consistently update your skills to keep up with the latest vulnerabilities and defense mechanisms in web technologies.
+""",
+    verbose=True,
+    allow_delegation=False,
+    llm=ChatOpenAI(model=config.best_gpt_model),
+    tools=[
+        rustscan.rustscan,
+        rustscan.rustscan_docs,
+        zaproxy.zap_api_scan,
+        zaproxy.zap_baseline_scan,
+        zaproxy.zap_general_use
+    ],
+)
+
 
 NetworkPentester = Agent(
     role="Network Penetration Tester",

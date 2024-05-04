@@ -34,6 +34,28 @@ def networkPentTester(question):
     )
 
 
+def WebAppPentTester(question):
+    return Crew(
+        agents=[
+            agents.WebAppPentester,
+            agents.ResearcherAgent,
+            agents.WriterAgent,
+            agents.MakeMarkDownAgent,
+        ],
+        tasks=[
+            dynamic_tasks.webapp_pentest_task(question, agents.WebAppPentester),
+            tasks.cybersecurity_research,
+            tasks.build_cybersecurity_report,
+            tasks.convert_report_to_markdown,
+        ],
+        process=Process.sequential,
+        memory=True,
+        cache=True,
+        full_output=True,
+    )
+
+
+# NOTE: this is just for testing, DO NOT use in production!
 def testCrew():
     return Crew(
         agents=[agents.WriterAgent],
@@ -57,7 +79,11 @@ def call_crew(user_question):
     question = user_question
     crew = None
 
-    if "Network" in prompt_router:
+    if "Web Application" in prompt_router:
+        print("Using Web-App Pentesting crew")
+        crew = WebAppPentTester(question)
+    elif "Network" in prompt_router:
+        print("Using Network Pentesting crew")
         crew = networkPentTester(question)
 
     # # TODO: remove after testing

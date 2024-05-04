@@ -26,14 +26,16 @@ import sys
 import os
 import re
 
+
 def replace_local_urls(text):
-    # Regex to match the URLs with localhost, 127.0.0.1, with optional http(s) and www
+    # regex to match the URLs with localhost, 127.0.0.1, with optional http(s) and www
     pattern = re.compile(
-        r'(https?:\/\/)?(www\.)?(localhost|127\.0\.0\.1)(:[0-9]+)?',
-        re.IGNORECASE
+        r"(https?:\/\/)?(www\.)?(localhost|127\.0\.0\.1)(:[0-9]+)?", re.IGNORECASE
     )
-    # Replace all matching patterns
-    return pattern.sub(r'\1\2host.docker.internal\4', text)
+
+    # replace all matching patterns
+    return pattern.sub(r"\1\2host.docker.internal\4", text)
+
 
 def run_agents(user_question):
     # TODO: this might not be that good...
@@ -165,7 +167,10 @@ if st.session_state["agent_running"]:
         if os.path.exists(text_file_path):
             with open(text_file_path, "r") as file:
                 text_content = file.read()
-            text_content = generate_loading_screen(False) + "\n\n" + text_content
+            ascii_loading_text = generate_loading_screen(False)
+            text_content = (
+                ascii_loading_text + "\n\n" + text_content + "\n\n" + ascii_loading_text
+            )
             st.code(remove_color_codes(text_content))
         time.sleep(1)
 

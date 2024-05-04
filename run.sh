@@ -19,9 +19,13 @@ case "$rebuild_response" in
         ;;
 esac
 
+echo # spacer
+
 # grab stable Zaproxy Docker Image
 echo "Pulling the zaproxy image..."
 docker pull ghcr.io/zaproxy/zaproxy:stable || { echo "Failed to pull zaproxy image"; exit 1; }
+
+echo # spacer
 
 # check if container already exists
 if [ "$(docker ps -aq -f name=^klinux$)" ]; then
@@ -39,9 +43,13 @@ if [ "$(docker ps -aq -f name=^klinux$)" ]; then
     esac
 fi
 
+echo # spacer
+
 # run Docker container
 echo "Running the Docker container..."
 docker run -it -p 8501:8501 --name klinux --privileged -v /var/run/docker.sock:/var/run/docker.sock klinux || { echo "Failed to run container"; exit 1; }
+
+echo # spacer
 
 echo "Setup completed successfully"
 
