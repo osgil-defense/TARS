@@ -164,4 +164,5 @@ cython_debug/
 .DS_Store
 tars/db/
 tars/events/
+.sandbox/
 
