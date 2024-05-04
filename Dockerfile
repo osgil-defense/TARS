@@ -7,6 +7,7 @@ RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y wget
 RUN apt-get install -y nmap sqlmap autopsy john
 RUN apt-get install -y vim python3-pip git python-is-python3
+RUN apt-get install -y curl
 
 # install zaproxy stuff
 RUN apt-get install -y zaproxy
@@ -49,3 +50,4 @@ WORKDIR /root/tars/
 ## api mode
 EXPOSE 8501
 ENTRYPOINT ["/bin/bash", "-c", "source /root/.env && exec streamlit run /root/tars/frontend.py --server.port=8501 --server.address=0.0.0.0"]
+
