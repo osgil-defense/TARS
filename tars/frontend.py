@@ -26,9 +26,18 @@ import sys
 import os
 import re
 
+def replace_local_urls(text):
+    # Regex to match the URLs with localhost, 127.0.0.1, with optional http(s) and www
+    pattern = re.compile(
+        r'(https?:\/\/)?(www\.)?(localhost|127\.0\.0\.1)(:[0-9]+)?',
+        re.IGNORECASE
+    )
+    # Replace all matching patterns
+    return pattern.sub(r'\1\2host.docker.internal\4', text)
 
 def run_agents(user_question):
     # TODO: this might not be that good...
+    user_question = replace_local_urls(user_question)
     events_dir = os.path.join(os.path.dirname(__file__), "events")
 
     cli_filepath = os.path.join(os.path.dirname(__file__), "cli.py")
