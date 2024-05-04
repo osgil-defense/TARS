@@ -30,7 +30,7 @@ As a seasoned web application penetration tester, you excel at simulating cyber 
         rustscan.rustscan_docs,
         zaproxy.zap_api_scan,
         zaproxy.zap_baseline_scan,
-        zaproxy.zap_general_use
+        zaproxy.zap_general_use,
     ],
 )
 
