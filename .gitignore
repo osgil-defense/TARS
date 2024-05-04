@@ -165,4 +165,5 @@ cython_debug/
 tars/db/
 tars/events/
 .sandbox/
+frontend/db/
 
