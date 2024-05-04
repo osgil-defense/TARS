@@ -11,20 +11,24 @@ So if you are trying to optimize this routine and fail,
 (very likely) please increase the following counter
 as a warning to the next developer:
 
-total_hours_lost_here = 20
+total_hours_lost_here = 22
 """
 
-import streamlit as st
 from openai import OpenAI
+import streamlit as st
 import subprocess
 import random
+import shlex
 import time
 import json
 import uuid
-import shlex
 import sys
 import os
 import re
+
+config_file_path = os.path.join(str("/".join(__file__.split("/")[:-2])), "tars")
+sys.path.append(config_file_path)
+import config
 
 
 def replace_local_urls(text):
@@ -38,11 +42,10 @@ def replace_local_urls(text):
 
 
 def run_agents(user_question):
-    # TODO: this might not be that good...
     user_question = replace_local_urls(user_question)
-    events_dir = os.path.join(os.path.dirname(__file__), "events")
+    events_dir = config.events_dir
+    cli_filepath = config.cli_filepath
 
-    cli_filepath = os.path.join(os.path.dirname(__file__), "cli.py")
     clid = f"{uuid.uuid4()}_{int(time.time())}"
     cli_id = shlex.quote(f"{clid}")
     user_question = shlex.quote(user_question)
@@ -118,18 +121,10 @@ def remove_color_codes(text):
     return ansi_escape.sub("", text)
 
 
-def generate_loading_screen(normal_true=True):
-    total_boxes = 100
-    if normal_true:
-        filled_boxes = random.randint(1, (total_boxes - 1))
-        loading_bar = (
-            "[" + "█" * filled_boxes + " " * (total_boxes - filled_boxes) + "]"
-        )
-        return f"Loading {loading_bar} {int((filled_boxes / total_boxes) * 100)}%"
-    else:
-        assets = "⡀⡁⡂⡃⡄⡅⡆⡇⡈⡉⡊⡋⡌⡍⡎⡏⡐⡑⡒⡓⡔⡕⡖⡗⡘⡙⡚⡛⡜⡝⡞⡟⡠⡡⡢⡣⡤⡥⡦⡧⡨⡩⡪⡫⡬⡭⡮⡯⡰⡱⡲⡳⡴⡵⡶⡷⡸⡹⡺⡻⡼⡽⡾⡿⢀⢁⢂⢃⢄⢅⢆⢇⢈⢉⢊⢋⢌⢍⢎⢏⢐⢑⢒⢓⢔⢕⢖⢗⢘⢙⢚⢛⢜⢝⢞⢟⢠⢡⢢⢣⢤⢥⢦⢧⢨⢩⢪⢫⢬⢭⢮⢯⢰⢱⢲⢳⢴⢵⢶⢷⢸⢹⢺⢻⢼⢽⢾⢿⣀⣁⣂⣃⣄⣅⣆⣇⣈⣉⣊⣋⣌⣍⣎⣏⣐⣑⣒⣓⣔⣕⣖⣗⣘⣙⣚⣛⣜⣝⣞⣟⣠⣡⣢⣣⣤⣥⣦⣧⣨⣩⣪⣫⣬⣭⣮⣯⣰⣱⣲⣳⣴⣵⣶⣷⣸⣹⣺⣻⣼⣽⣾⣿"
-        assets = list(assets)
-        return "".join(random.sample(assets, total_boxes))
+def generate_loading_screen(total_boxes=100):
+    assets = "⡀⡁⡂⡃⡄⡅⡆⡇⡈⡉⡊⡋⡌⡍⡎⡏⡐⡑⡒⡓⡔⡕⡖⡗⡘⡙⡚⡛⡜⡝⡞⡟⡠⡡⡢⡣⡤⡥⡦⡧⡨⡩⡪⡫⡬⡭⡮⡯⡰⡱⡲⡳⡴⡵⡶⡷⡸⡹⡺⡻⡼⡽⡾⡿⢀⢁⢂⢃⢄⢅⢆⢇⢈⢉⢊⢋⢌⢍⢎⢏⢐⢑⢒⢓⢔⢕⢖⢗⢘⢙⢚⢛⢜⢝⢞⢟⢠⢡⢢⢣⢤⢥⢦⢧⢨⢩⢪⢫⢬⢭⢮⢯⢰⢱⢲⢳⢴⢵⢶⢷⢸⢹⢺⢻⢼⢽⢾⢿⣀⣁⣂⣃⣄⣅⣆⣇⣈⣉⣊⣋⣌⣍⣎⣏⣐⣑⣒⣓⣔⣕⣖⣗⣘⣙⣚⣛⣜⣝⣞⣟⣠⣡⣢⣣⣤⣥⣦⣧⣨⣩⣪⣫⣬⣭⣮⣯⣰⣱⣲⣳⣴⣵⣶⣷⣸⣹⣺⣻⣼⣽⣾⣿"
+    assets = list(assets)
+    return "".join(random.sample(assets, total_boxes))
 
 
 # Initialize the OpenAI client with an API key
@@ -149,6 +144,7 @@ if "submitted" not in st.session_state:
     st.session_state["stream_max_i"] = -1
     st.session_state["agent_words_gened"] = 0
     st.session_state["job_failed"] = False
+    st.session_state["start_time"] = 0
 
 
 st.markdown("<h1 style='text-align: center;'>TARS</h1>", unsafe_allow_html=True)
@@ -167,7 +163,7 @@ if st.session_state["agent_running"]:
         if os.path.exists(text_file_path):
             with open(text_file_path, "r") as file:
                 text_content = file.read()
-            ascii_loading_text = generate_loading_screen(False)
+            ascii_loading_text = generate_loading_screen()
             text_content = (
                 ascii_loading_text + "\n\n" + text_content + "\n\n" + ascii_loading_text
             )
@@ -185,6 +181,29 @@ if st.session_state["agent_running"]:
 
         # print final result
         try:
+            runtime = time.time() - st.session_state["start_time"]
+
+            # add raw output from agents running (saved stdout outputs)
+            reformated_docs_text = (
+                f"```\n" + str(docs["text"]).replace("```", '"""') + f"\n```"
+            )
+            reformated_docs_text = f"""
+## Job's ID
+                 
+{aid}
+
+## Runtime
+
+{runtime} seconds
+
+## Raw Agent(s) Output
+
+{reformated_docs_text}
+"""
+            st.session_state.messages.append(
+                {"role": "system", "content": reformated_docs_text}
+            )
+
             final_report = clean_text(docs["json"]["output"]["result"]["final_output"])
             st.session_state.messages.append(
                 {"role": "system", "content": final_report}
@@ -256,6 +275,7 @@ if not st.session_state["submitted"] and not st.session_state["run_agent"]:
             st.rerun()
 
 if st.session_state["run_agent"] == True:
+    st.session_state["start_time"] = time.time()
     init_agent_output = run_agents(st.session_state["sys_prompt"])
     print(f"Started new agent session: {init_agent_output['id']}")
     st.session_state["init_agent_output"] = init_agent_output
