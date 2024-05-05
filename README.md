@@ -1,4 +1,4 @@
-# TARS
+# Threat Assessment And Response System (TARS)
 
 ## Vision
 
