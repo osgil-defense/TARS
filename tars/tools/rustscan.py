@@ -2,6 +2,8 @@ from langchain_community.tools import DuckDuckGoSearchRun
 from subprocess import Popen, PIPE
 from urllib.parse import urlparse
 from crewai_tools import tool
+import validators
+import socket
 import subprocess
 import sys
 import os
@@ -12,12 +14,11 @@ def load_file(file_path):
         return file.read()
 
 
-def url_to_host(url):
-    parsed_url = urlparse(url)
-    host = parsed_url.netloc
-    if "www." not in host and not host.startswith("www."):
-        host = "www." + host
-    return host
+def get_ip(url):
+    if not validators.url(url):
+        raise Exception(f"Url {url} is not a valid URL")
+    root = urlparse(url).netloc
+    return socket.gethostbyname(root)
 
 
 RUSTSCAN_DOCS = load_file(
@@ -37,9 +38,10 @@ def rustscan(address: str) -> str:
     - str: The results of the RustScan or an error message.
     """
 
+    # convert url to IP address to make things easier
     url = address
-    if str(address).startswith("http"):
-        url = url_to_host(address)
+    if validators.url(url):
+        url = get_ip(url)
 
     process = subprocess.Popen(
         f"rustscan -a {url}",

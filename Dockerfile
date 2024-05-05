@@ -4,14 +4,12 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # install dependencies
 RUN apt-get update && apt-get upgrade -y
-RUN apt-get install -y wget
+RUN apt-get install -y curl dnsutils wget
 RUN apt-get install -y nmap sqlmap autopsy john
 RUN apt-get install -y vim python3-pip git python-is-python3
-RUN apt-get install -y curl
 
 # install zaproxy stuff
-RUN apt-get install -y zaproxy
-RUN apt-get install -y docker.io
+RUN apt-get install -y zaproxy docker.io
 RUN pip install zaproxy
 
 # install Google Chrome
