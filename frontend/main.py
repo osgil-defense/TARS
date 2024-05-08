@@ -150,7 +150,9 @@ if "submitted" not in st.session_state:
 st.markdown("<h1 style='text-align: center;'>TARS</h1>", unsafe_allow_html=True)
 
 st.write("\n")
-st.image(image="logo.png")
+st.image(
+    image=os.path.join("/".join(os.path.abspath(__file__).split("/")[:-1]), "logo.png")
+)
 st.write("\n")
 
 if st.session_state["agent_running"]:

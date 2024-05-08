@@ -47,5 +47,5 @@ WORKDIR /root/tars/
 
 ## api mode
 EXPOSE 8501
-ENTRYPOINT ["/bin/bash", "-c", "source /root/.env && exec streamlit run /root/tars/frontend/main.py --server.port=8501 --server.address=0.0.0.0"]
+ENTRYPOINT ["/bin/bash", "-c", "source /root/.env && exec streamlit run /root/frontend/main.py --server.port=8501 --server.address=0.0.0.0"]
 
