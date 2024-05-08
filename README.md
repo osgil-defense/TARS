@@ -1,5 +1,11 @@
 # Threat Assessment And Response System (TARS)
 
+## Demos
+
+[Demo #2](https://www.youtube.com/watch?v=Sjw_gkSz6Lw)
+
+[Demo #1](https://www.youtube.com/watch?v=HNlvgvFs43g)
+
 ## Vision
 
 Create a tool to automate the process of pentesting, allowing pentesters to do more with less and in turn make the world more secure.
@@ -32,11 +38,11 @@ Check out the app at: http://localhost:8501/
 
 (April 24, 2024) We are competing in the followign Hackathon: https://googleai.devpost.com/
 
-## Optional Tools To Add
+## Tools To Add
 
 - [X] [Nettacker](https://github.com/OWASP/Nettacker)
 - [X] [RustScan](https://github.com/RustScan/RustScan)
-- [ ] [ZAP](https://www.zaproxy.org/)
+- [X] [ZAP](https://www.zaproxy.org/)
 - [X] [nmap](https://github.com/nmap/nmap)
 - [ ] [john the ripper](https://github.com/openwall/john)
 - [ ] [sqlmap](https://github.com/sqlmapproject/sqlmap)

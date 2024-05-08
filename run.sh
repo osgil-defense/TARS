@@ -1,4 +1,28 @@
-echo "RUNNING TARS - User Input Needed..."
+spacer () {
+    echo
+    printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
+    echo
+}
+
+#########################[MAIN FUNCTION CALLS]#########################
+
+cat << EOF
+ ____  _   _ _   _ _   _ ___ _   _  ____ 
+|  _ \| | | | \ | | \ | |_ _| \ | |/ ___|
+| |_) | | | |  \| |  \| || ||  \| | |  _ 
+|  _ <| |_| | |\  | |\  || || |\  | |_| |
+|_|_\_\\___/|_|_\_|_|_\_|___|_| \_|\____|
+ _____  _    ____  ____
+|_   _|/ \  |  _ \/ ___|                 
+  | | / _ \ | |_) \___ \                 
+  | |/ ___ \|  _ < ___) |                
+  |_/_/   \_\_| \_\____/                 
+ 
+*User-Input Required!
+
+EOF
+
+spacer
 
 # check if Docker is installed
 if ! command -v docker &> /dev/null
@@ -19,13 +43,13 @@ case "$rebuild_response" in
         ;;
 esac
 
-echo # spacer
+spacer
 
 # grab stable Zaproxy Docker Image
 echo "Pulling the zaproxy image..."
 docker pull ghcr.io/zaproxy/zaproxy:stable || { echo "Failed to pull zaproxy image"; exit 1; }
 
-echo # spacer
+spacer
 
 # check if container already exists
 if [ "$(docker ps -aq -f name=^klinux$)" ]; then
@@ -43,13 +67,13 @@ if [ "$(docker ps -aq -f name=^klinux$)" ]; then
     esac
 fi
 
-echo # spacer
+spacer
 
 # run Docker container
 echo "Running the Docker container..."
 docker run -it -p 8501:8501 --name klinux --privileged -v /var/run/docker.sock:/var/run/docker.sock klinux || { echo "Failed to run container"; exit 1; }
 
-echo # spacer
+spacer
 
 echo "Setup completed successfully"
 
