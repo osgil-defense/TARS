@@ -79,10 +79,10 @@ def call_crew(user_question):
     question = user_question
     crew = None
 
-    if ("Web Application").lower() in prompt_router:
+    if ("Web Application") in prompt_router:
         print("Using Web-App Pentesting crew")
         crew = WebAppPentTester(question)
-    elif ("Network").lower() in prompt_router:
+    elif ("Network") in prompt_router:
         print("Using Network Pentesting crew")
         crew = networkPentTester(question)
 
