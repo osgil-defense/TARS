@@ -121,12 +121,6 @@ def remove_color_codes(text):
     return ansi_escape.sub("", text)
 
 
-def generate_loading_screen(total_boxes=100):
-    assets = "⡀⡁⡂⡃⡄⡅⡆⡇⡈⡉⡊⡋⡌⡍⡎⡏⡐⡑⡒⡓⡔⡕⡖⡗⡘⡙⡚⡛⡜⡝⡞⡟⡠⡡⡢⡣⡤⡥⡦⡧⡨⡩⡪⡫⡬⡭⡮⡯⡰⡱⡲⡳⡴⡵⡶⡷⡸⡹⡺⡻⡼⡽⡾⡿⢀⢁⢂⢃⢄⢅⢆⢇⢈⢉⢊⢋⢌⢍⢎⢏⢐⢑⢒⢓⢔⢕⢖⢗⢘⢙⢚⢛⢜⢝⢞⢟⢠⢡⢢⢣⢤⢥⢦⢧⢨⢩⢪⢫⢬⢭⢮⢯⢰⢱⢲⢳⢴⢵⢶⢷⢸⢹⢺⢻⢼⢽⢾⢿⣀⣁⣂⣃⣄⣅⣆⣇⣈⣉⣊⣋⣌⣍⣎⣏⣐⣑⣒⣓⣔⣕⣖⣗⣘⣙⣚⣛⣜⣝⣞⣟⣠⣡⣢⣣⣤⣥⣦⣧⣨⣩⣪⣫⣬⣭⣮⣯⣰⣱⣲⣳⣴⣵⣶⣷⣸⣹⣺⣻⣼⣽⣾⣿"
-    assets = list(assets)
-    return "".join(random.sample(assets, total_boxes))
-
-
 # Initialize the OpenAI client with an API key
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
@@ -155,43 +149,40 @@ st.image(
 )
 st.write("\n")
 
-if st.session_state["agent_running"]:
+if st.session_state.get("agent_running"):
     aid = st.session_state["init_agent_output"]["id"]
     astatus = agent_running(aid)
     print("===> astatus: ", astatus)
-    if astatus["status"] == True:
-        print(f"Agent id {aid} is still running...")
-        text_file_path = st.session_state["init_agent_output"]["paths"]["text"]
-        if os.path.exists(text_file_path):
-            with open(text_file_path, "r") as file:
-                text_content = file.read()
-            ascii_loading_text = generate_loading_screen()
-            text_content = (
-                ascii_loading_text + "\n\n" + text_content + "\n\n" + ascii_loading_text
+    with st.status("Running agents..."):
+        if astatus["status"]:
+            print(f"Agent id {aid} is still running...")
+            text_file_path = st.session_state["init_agent_output"]["paths"]["text"]
+            if os.path.exists(text_file_path):
+                with open(text_file_path, "r") as file:
+                    text_content = file.read()
+                text_content = "\n\n```\n" + text_content + "\n```\n\n"
+                st.write(remove_color_codes(text_content))
+            time.sleep(1)
+            st.rerun()
+        else:
+            print(f"Agent id {aid} is DONE!")
+            st.session_state["agent_running"] = False
+            docs = load_agent_content(
+                st.session_state["init_agent_output"]["paths"]["text"],
+                st.session_state["init_agent_output"]["paths"]["json"],
             )
-            st.code(remove_color_codes(text_content))
-        time.sleep(1)
 
-        st.rerun()
-    else:
-        print(f"Agent id {aid} is DONE!")
-        st.session_state["agent_running"] = False
-        docs = load_agent_content(
-            st.session_state["init_agent_output"]["paths"]["text"],
-            st.session_state["init_agent_output"]["paths"]["json"],
-        )
+            # print final result
+            try:
+                runtime = time.time() - st.session_state["start_time"]
 
-        # print final result
-        try:
-            runtime = time.time() - st.session_state["start_time"]
-
-            # add raw output from agents running (saved stdout outputs)
-            reformated_docs_text = (
-                f"```\n" + str(docs["text"]).replace("```", '"""') + f"\n```"
-            )
-            reformated_docs_text = f"""
+                # add raw output from agents running (saved stdout outputs)
+                reformated_docs_text = (
+                    f"```\n" + str(docs["text"]).replace("```", '"""') + f"\n```"
+                )
+                reformated_docs_text = f"""
 ## Job's ID
-                 
+
 {aid}
 
 ## Runtime
@@ -202,44 +193,49 @@ if st.session_state["agent_running"]:
 
 {reformated_docs_text}
 """
-            st.session_state.messages.append(
-                {"role": "system", "content": reformated_docs_text}
-            )
+                st.session_state.messages.append(
+                    {"role": "system", "content": reformated_docs_text}
+                )
 
-            final_report = clean_text(docs["json"]["output"]["result"]["final_output"])
-            st.session_state.messages.append(
-                {"role": "system", "content": final_report}
-            )
-        except Exception as err:
-            print("---> ERROR LOADING FINAL REPORT:", err)
-            text_file_path = st.session_state["init_agent_output"]["paths"]["text"]
-            if os.path.exists(text_file_path):
-                with open(text_file_path, "r") as file:
-                    text_content = file.read()
-                if len(text_content) > 0:
-                    st.session_state.messages.append(
-                        {"role": "system", "content": text_content}
-                    )
-            try:
-                error_msg = docs["json"]["error"]
-            except:
-                error_msg = str(err)
+                final_report = clean_text(
+                    docs["json"]["output"]["result"]["final_output"]
+                )
+                st.session_state.messages.append(
+                    {"role": "system", "content": final_report}
+                )
+            except Exception as err:
+                print("---> ERROR LOADING FINAL REPORT:", err)
+                text_file_path = st.session_state["init_agent_output"]["paths"]["text"]
+                if os.path.exists(text_file_path):
+                    with open(text_file_path, "r") as file:
+                        text_content = file.read()
+                    if len(text_content) > 0:
+                        st.session_state.messages.append(
+                            {"role": "system", "content": text_content}
+                        )
+                try:
+                    error_msg = docs["json"]["error"]
+                except:
+                    error_msg = str(err)
 
-            st.session_state.messages.append(
-                {
-                    "role": "system",
-                    "content": f"Job Completely Failed Due To: {error_msg}",
-                }
-            )
+                st.session_state.messages.append(
+                    {
+                        "role": "system",
+                        "content": f"Job Completely Failed Due To: {error_msg}",
+                    }
+                )
 
-            st.session_state.messages.append(
-                {"role": "system", "content": f"🚨 Try Again By Refreshing The Page 🚨"}
-            )
+                st.session_state.messages.append(
+                    {
+                        "role": "system",
+                        "content": f"🚨 Try Again By Refreshing The Page 🚨",
+                    }
+                )
 
-            st.session_state["job_failed"] = True
+                st.session_state["job_failed"] = True
 
-        st.session_state["agent_done"] = True
-        st.rerun()
+            st.session_state["agent_done"] = True
+            st.rerun()
 
 # User input form
 if not st.session_state["submitted"] and not st.session_state["run_agent"]:
@@ -256,8 +252,8 @@ if not st.session_state["submitted"] and not st.session_state["run_agent"]:
         and not st.session_state["submitted"]
         and not st.session_state["run_agent"]
     ):
-        if not st.session_state["website"]:
-            st.warning("Please Enter A Valid Website (URL)", icon="⚠️")
+        if not st.session_state["website"] or len(text.split(" ")) < 7:
+            st.warning("Include a valid website URL and a proper sentence/task", icon="⚠️")
         else:
             first_prompt = f"""
 ### Website to Analyze:
