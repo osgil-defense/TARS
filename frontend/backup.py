@@ -17,6 +17,7 @@ total_hours_lost_here = 22
 from openai import OpenAI
 import streamlit as st
 import subprocess
+import random
 import shlex
 import time
 import json
@@ -28,6 +29,8 @@ import re
 config_file_path = os.path.join(str("/".join(__file__.split("/")[:-2])), "tars")
 sys.path.append(config_file_path)
 import config
+
+MIN_WORDS_LENGTH_SUBMIT = 5
 
 
 def replace_local_urls(text):
@@ -84,11 +87,11 @@ def agent_running(id):
 def load_agent_content(text_path=None, json_path=None):
     output = {"text": None, "json": None}
 
-    if text_path is not None and os.path.exists(text_path):
+    if text_path != None and os.path.exists(text_path):
         with open(text_path, "r") as file:
             output["text"] = file.read()
 
-    if json_path is not None and os.path.exists(json_path):
+    if json_path != None and os.path.exists(json_path):
         with open(json_path, "r") as f:
             output["json"] = json.load(f)
 
@@ -138,18 +141,21 @@ if "submitted" not in st.session_state:
     st.session_state["agent_words_gened"] = 0
     st.session_state["job_failed"] = False
     st.session_state["start_time"] = 0
+    st.session_state["show_warning_1"] = False
 
-# Title and Logo
+
 st.markdown("<h1 style='text-align: center;'>TARS</h1>", unsafe_allow_html=True)
+
 st.write("\n")
 st.image(
     image=os.path.join("/".join(os.path.abspath(__file__).split("/")[:-1]), "logo.png")
 )
 st.write("\n")
 
-# Running Agent Check
-# Running Agent Check
 if st.session_state.get("agent_running"):
+    if st.session_state["show_warning_1"]:
+        st.session_state["show_warning_1"] = False
+        st.rerun()
     aid = st.session_state["init_agent_output"]["id"]
     astatus = agent_running(aid)
     print("===> astatus: ", astatus)
@@ -172,11 +178,11 @@ if st.session_state.get("agent_running"):
                 st.session_state["init_agent_output"]["paths"]["json"],
             )
 
-            # Print final result
+            # print final result
             try:
                 runtime = time.time() - st.session_state["start_time"]
 
-                # Add raw output from agents running (saved stdout outputs)
+                # add raw output from agents running (saved stdout outputs)
                 reformated_docs_text = (
                     f"```\n" + str(docs["text"]).replace("```", '"""') + f"\n```"
                 )
@@ -237,7 +243,7 @@ if st.session_state.get("agent_running"):
             st.session_state["agent_done"] = True
             st.rerun()
 
-# User Input Form
+# User input form
 if not st.session_state["submitted"] and not st.session_state["run_agent"]:
     with st.form("my_form"):
         st.session_state["website"] = st.text_input(
@@ -246,14 +252,18 @@ if not st.session_state["submitted"] and not st.session_state["run_agent"]:
         text = st.text_area("What Cybersecurity-Related Task Do You Want To Do?", "")
         submitted = st.form_submit_button("Submit")
 
-    # Handle Form Submission
+    # Handle form submission
     if (
         submitted
         and not st.session_state["submitted"]
         and not st.session_state["run_agent"]
     ):
-        if not st.session_state["website"] or len(text.split(" ")) < 7:
-            st.warning("Include a valid website URL and a proper sentence/task", icon="⚠️")
+        # NOTE: a sentence should be AT LEAST 5 words long!
+        if (
+            not st.session_state["website"]
+            or len(text.split(" ")) < MIN_WORDS_LENGTH_SUBMIT
+        ):
+            st.session_state["show_warning_1"] = True
         else:
             first_prompt = f"""
 ### Website to Analyze:
@@ -270,10 +280,16 @@ if not st.session_state["submitted"] and not st.session_state["run_agent"]:
             )
             st.session_state["submitted"] = True
             st.session_state["run_agent"] = True
+            st.session_state["show_warning_1"] = False
             st.rerun()
 
-# Run Agent
-if st.session_state["run_agent"]:
+# Display warning if needed
+if st.session_state["show_warning_1"]:
+    st.warning(
+        f"Please enter a valid website and a task description with at least {MIN_WORDS_LENGTH_SUBMIT} words"
+    )
+
+if st.session_state["run_agent"] == True:
     st.session_state["start_time"] = time.time()
     init_agent_output = run_agents(st.session_state["sys_prompt"])
     print(f"Started new agent session: {init_agent_output['id']}")
@@ -285,7 +301,7 @@ if st.session_state["run_agent"]:
     print()
     st.rerun()
 
-# Display Messages from Session State
+# Display messages from session state
 for message in st.session_state["messages"]:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
@@ -295,14 +311,14 @@ if (
     and st.session_state["agent_done"]
     and not st.session_state["job_failed"]
 ):
-    # Chat Input for Interaction
+    # Chat input for interaction
     prompt = st.chat_input("Ask about the commands executed")
     if prompt:
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        # Call OpenAI's API to Generate a Response
+        # Call OpenAI's API to generate a response
         with st.chat_message("assistant"):
             stream = client.chat.completions.create(
                 model=st.session_state["openai_model"],
