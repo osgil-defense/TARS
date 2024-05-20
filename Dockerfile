@@ -32,6 +32,7 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # install, manually, nettacker
 RUN mkdir /opt/nettacker
 RUN git clone https://github.com/OWASP/Nettacker.git /opt/nettacker
+RUN apt-get remove -y python3-cryptography
 RUN pip3 install -r /opt/nettacker/requirements.txt
 RUN chmod +x /opt/nettacker/nettacker.py
 RUN ln -s /opt/nettacker/nettacker.py /usr/local/bin/nettacker
