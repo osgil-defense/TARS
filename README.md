@@ -25,7 +25,9 @@ Provide intelligent defense solutions by building AI-Agent based tools for autom
 
 ## How To Run
 
-Run the main script that will set everything and run it too:
+⚠️ Warning: TARS has been tested on macOS and some Linux distros!
+
+To run TARS, execute the main script, which will set everything up and run it too:
 
 ```bash
 bash run.sh
