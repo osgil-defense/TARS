@@ -39,7 +39,8 @@ RUN ln -s /opt/nettacker/nettacker.py /usr/local/bin/nettacker
 
 # install project's depends
 COPY . /root/
-RUN pip3 install -r /root/requirements.txt
+RUN pip3 install --default-timeout=1000 --no-cache-dir --use-deprecated=legacy-resolver -r /root/requirements.txt
+
 
 WORKDIR /root/tars/
 
