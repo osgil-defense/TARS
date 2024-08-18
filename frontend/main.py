@@ -5,7 +5,7 @@ When I wrote this code, only God and I knew how it worked.
 Now, only God knows!
 
 Streamlit is a shit product, don't use it. But we are too,
-deep into this now to change switch. Maybe in another life.
+deep into this now to switch. Maybe in another life.
 
 So if you are trying to optimize this routine and fail,
 (very likely) please increase the following counter
