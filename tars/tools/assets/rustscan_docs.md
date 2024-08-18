@@ -61,6 +61,7 @@ RustScan supports CIDR:
 The file is a new line separated list of IPs / Hosts to scan:
 
 **hosts.txt**
+
 ```
 192.168.0.1
 192.168.0.2
@@ -98,8 +99,9 @@ You can input a comma separated list of ports to scan:
 To scan a range of ports:
 
 To run:
+
 ```console
-➜ rustscan -a 127.0.0.1 --range 1-1000    
+➜ rustscan -a 127.0.0.1 --range 1-1000
 53,631
 ```
 
@@ -114,6 +116,7 @@ rustscan -a 127.0.0.1 -- -A -sC
 ```
 
 To run:
+
 ```console
 nmap -Pn -vvv -p $PORTS -A -sC 127.0.0.1
 ```
