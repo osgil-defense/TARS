@@ -30,7 +30,7 @@ Provide intelligent defense solutions by building AI-Agent based tools for autom
 To run TARS, execute the main script, which will set everything up and run it too:
 
 ```bash
-bash run.sh
+bash cli.sh -r
 ```
 
 Then, visit: http://localhost:8501/
@@ -40,7 +40,7 @@ Then, visit: http://localhost:8501/
 Keeping the code clean, consistent, and well structured requires formatting. To do formatting for this project, run the following command:
 
 ```bash
-bash fm.sh
+bash cli.sh -f
 ```
 
 ## Tools To Add
