@@ -26,12 +26,7 @@ format_bash() {
 		done
 	}
 
-	if ! command -v shfmt &>/dev/null; then
-		echo -e "${RED}Error: shfmt is not installed. Please install shfmt and try again.${NC}"
-		return 1
-	fi
-
-	echo -e "${BLUE}Formatting JavaScript/JSON/Markdown files in directory:${NC} $path"
+	echo -e "${BLUE}Formatting Bash/Zsh files in directory:${NC} $path"
 
 	if [[ -d "$path" ]]; then
 		reformat_shell_scripts "$path"
@@ -50,13 +45,10 @@ format_bash() {
 
 format_python() {
 	local path="$1"
-	if ! command -v black &>/dev/null; then
-		echo -e "${RED}Error: black is not installed. Please install black and try again.${NC}"
-		return 1
-	fi
+
+	echo -e "${BLUE}Formatting Python files in directory:${NC} $path"
 
 	if [[ -d "$path" ]]; then
-		echo -e "${BLUE}Formatting Python files in directory:${NC} $path"
 		black "$path"
 	elif [[ -f "$path" && "$path" == *.py ]]; then
 		echo -e "${BLUE}Formatting Python file:${NC} $path"
@@ -69,13 +61,10 @@ format_python() {
 
 format_javascript() {
 	local path="$1"
-	if ! command -v prettier &>/dev/null; then
-		echo -e "${RED}Error: prettier is not installed. Please install prettier and try again.${NC}"
-		return 1
-	fi
+
+	echo -e "${BLUE}Formatting JavaScript/JSON/Markdown files in directory:${NC} $path"
 
 	if [[ -d "$path" ]]; then
-		echo -e "${BLUE}Formatting JavaScript/JSON/Markdown files in directory:${NC} $path"
 		prettier --write "$path/**/*.{js,json,md,jsx,html,css}"
 	elif [[ -f "$path" && ("$path" == *.js || "$path" == *.json || "$path" == *.md) ]]; then
 		echo -e "${BLUE}Formatting file:${NC} $path"
@@ -88,15 +77,25 @@ format_javascript() {
 
 # MAIN FUNCTION CALLS
 
-echo
 echo -e "${GREEN}Formatting Bash/Zsh files${NC}"
+if ! command -v shfmt &>/dev/null; then
+	echo -e "${RED}Error: shfmt is not installed. You can install it from: ${BLUE}https://github.com/mvdan/sh${NC}"
+	exit 1
+fi
 format_bash "$(pwd)"
 echo
 
 echo -e "${GREEN}Formatting Python files${NC}"
+if ! command -v black &>/dev/null; then
+	echo -e "${RED}Error: black is not installed. You can install it from: ${BLUE}https://github.com/psf/black${NC}"
+	exit 1
+fi
 format_python "$(pwd)"
 echo
 
 echo -e "${GREEN}Formatting JavaScript/JSON/Markdown files${NC}"
+if ! command -v prettier &>/dev/null; then
+	echo -e "${RED}Error: prettier is not installed. You can install it from: ${BLUE}https://www.npmjs.com/package/prettier${NC}"
+	exit 1
+fi
 format_javascript "$(pwd)"
-echo
