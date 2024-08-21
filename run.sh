@@ -4,7 +4,19 @@ spacer() {
 	echo
 }
 
-#########################[MAIN FUNCTION CALLS]#########################
+env_check() {
+	if [ -f .env ]; then
+		echo "Found .env file. Refer to .template_env if needed"
+	else
+		echo "File .env not found. Refer to .template_env and create it"
+		echo "'''"
+		sed '${/^$/d;}' .template_env
+		echo "'''"
+		exit 1
+	fi
+}
+
+# MAIN FUNCTION CALLS
 
 cat <<EOF
  ____  _   _ _   _ _   _ ___ _   _  ____ 
@@ -21,6 +33,11 @@ cat <<EOF
 *User-Input Required!
 
 EOF
+
+spacer
+
+# make sure the .env file has been created and set
+env_check
 
 spacer
 
