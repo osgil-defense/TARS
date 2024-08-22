@@ -94,6 +94,8 @@ env_check() {
 }
 
 run() {
+	spacer
+
 	echo "RUNNING TARS * User-Input Required!"
 
 	spacer
@@ -210,7 +212,7 @@ show_help() {
 	echo "  -f  Run formatter"
 }
 
-# MAIN FUNCTION CALLS
+# main function calls
 
 if [ $# -eq 0 ]; then
 	show_help
