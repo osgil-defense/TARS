@@ -6,7 +6,7 @@
 
 ## About
 
-TARS is our attempt towards trying to automate parts of cybersecurity penetration testing
+TARS is our attempt towards trying to automate parts of cybersecurity penetration testing using AI agents
 
 ## Long-Term Vision
 
@@ -27,13 +27,16 @@ Provide intelligent defense solutions by building AI-Agent based tools for autom
 
 ⚠️ Warning: TARS has been tested on macOS and some Linux distros!
 
-To run TARS, execute the main script, which will set everything up and run it too:
+1. Install [Docker](https://www.docker.com/)
+2. Create a ".env" file. This file will contain all the API keys needed to make TARS function. Refer to the ".template_env" file see what you need to provide in the ".env" file for.
+
+3. Execute TARS's main CLI tool to setup and run TARS in the browser:
 
 ```bash
 bash cli.sh -r
 ```
 
-Then, visit: http://localhost:8501/
+4. After all of this, start using TARS with the URL provided. It most likely will be this URL: http://localhost:8501/
 
 ## Run Formatter
 
@@ -43,7 +46,9 @@ Keeping the code clean, consistent, and well structured requires formatting. To 
 bash cli.sh -f
 ```
 
-## Tools To Add
+## Other Notes
+
+### Tools To Add
 
 - [x] [Nettacker](https://github.com/OWASP/Nettacker)
 - [x] [RustScan](https://github.com/RustScan/RustScan)
