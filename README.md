@@ -48,6 +48,10 @@ bash cli.sh -f
 
 ## Other Notes
 
+### Good Test Targets
+
+1. [Juice-Shop](https://github.com/juice-shop/juice-shop)
+
 ### Tools To Add
 
 - [x] [Nettacker](https://github.com/OWASP/Nettacker)
