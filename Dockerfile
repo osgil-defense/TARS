@@ -44,10 +44,9 @@ RUN pip3 install --default-timeout=1000 --no-cache-dir --use-deprecated=legacy-r
 
 WORKDIR /root/tars/
 
-# ## none-api mode (just shell mode)
-# CMD ["bash"]
+# NOTE: For testing, comment out ENTRYPOINT, uncomment CMD, then rebuild and run the image
 
-## api mode
 EXPOSE 8501
+# CMD ["bash"]
 ENTRYPOINT ["/bin/bash", "-c", "source /root/.env && exec streamlit run /root/frontend/main.py --server.port=8501 --server.address=0.0.0.0"]
 

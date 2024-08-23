@@ -1,0 +1,6 @@
+# https://platform.openai.com/api-keys
+export OPENAI_API_KEY=""
+
+# https://api.search.brave.com/app/keys
+export BRAVE_API_KEY=""
+

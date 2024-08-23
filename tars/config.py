@@ -4,7 +4,7 @@ events_dir = os.path.join(os.path.dirname(__file__), "events")
 
 cli_filepath = os.path.join(os.path.dirname(__file__), "cli.py")
 
-best_gpt_model = "gpt-4o"
+best_gpt_model = "gpt-4-turbo-2024-04-09"
 
 router_model_name = best_gpt_model
 
