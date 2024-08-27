@@ -77,10 +77,16 @@ def prompt_route(model_name, prompt_template_params, user_input):
 if __name__ == "__main__":
     import config
     import json
+
     print("\nTESTING TARS's PROMPT ROUTER\n")
     print(f"ROUTER CONFIG:")
     for key in config.router_config["options"]:
-        print("-", key, "=", ",".join(config.router_config["options"][key]).replace(",", ", "))
+        print(
+            "-",
+            key,
+            "=",
+            ",".join(config.router_config["options"][key]).replace(",", ", "),
+        )
     user_prompt = input("\nPROMPT: ")
     output = prompt_route(config.router_model_name, config.router_config, user_prompt)
     print(f"\nOUTPUT: {output}")

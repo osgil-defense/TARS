@@ -26,7 +26,7 @@ RUN dpkg -i rustscan_2.2.2_amd64.deb
 RUN rm rustscan_2.2.2_amd64.deb
 RUN apt-get install -y iputils-ping
 
-# segmented run layers so that compiler does not shit pants
+# segmented run layers so the compiler does not struggle
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # install, manually, nettacker
@@ -40,7 +40,6 @@ RUN ln -s /opt/nettacker/nettacker.py /usr/local/bin/nettacker
 # install project's depends
 COPY . /root/
 RUN pip3 install --default-timeout=1000 --no-cache-dir --use-deprecated=legacy-resolver -r /root/requirements.txt
-
 
 WORKDIR /root/tars/
 

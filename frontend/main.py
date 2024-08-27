@@ -4,7 +4,7 @@ Dear Programmer:
 When I wrote this code, only God and I knew how it worked.
 Now, only God knows!
 
-Streamlit is a shit product, don't use it. But we are too,
+Streamlit is a bad product, don't use it. But we are too,
 deep into this now to switch. Maybe in another life.
 
 So if you are trying to optimize this routine and fail,
