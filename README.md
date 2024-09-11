@@ -8,6 +8,12 @@
 
 TARS is our attempt towards trying to automate parts of cybersecurity penetration testing using AI agents
 
+## Demos
+
+| [![Video 1 Title](assets/thumbnail_1.png)](https://www.youtube.com/watch?v=HNlvgvFs43g) | [![Video 2 Title](assets/thumbnail_2.png)](https://www.youtube.com/watch?v=Sjw_gkSz6Lw) | [![Video 3 Title](assets/thumbnail_3.png)](https://www.youtube.com/watch?v=JSBVHl7PWek) |
+| :-------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------: |
+|                                         Demo #1                                         |                                     Demo #2 (Short)                                     |                                     Demo #3 (Long)                                      |
+
 ## Long-Term Vision
 
 Provide intelligent defense solutions by building AI-Agent based tools for automating cybersecurity penetration testing. In short, the plan is:
@@ -16,12 +22,6 @@ Provide intelligent defense solutions by building AI-Agent based tools for autom
 2. Optimize those agents to automate vulnerability identification and patching, instead of just scanning and threat reporting.
 3. Build a reactive defensive system that can produce countermeasures against attackers in real-time.
 4. (Long Term) Develop tools to prepare for a future where advanced, dynamic, and automated AI-driven attacks can be easily deployed.
-
-## Demos
-
-| [![Video 1 Title](assets/thumbnail_1.png)](https://www.youtube.com/watch?v=HNlvgvFs43g) | [![Video 2 Title](assets/thumbnail_2.png)](https://www.youtube.com/watch?v=Sjw_gkSz6Lw) | [![Video 3 Title](assets/thumbnail_3.png)](https://www.youtube.com/watch?v=JSBVHl7PWek) |
-| :-------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------: |
-|                                         Demo #1                                         |                                     Demo #2 (Short)                                     |                                     Demo #3 (Long)                                      |
 
 ## How To Run
 
