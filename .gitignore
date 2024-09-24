@@ -145,4 +145,5 @@ tars/events/
 .sandbox/
 frontend/db/
 frontend/v2/node_modules/
+frontend/v2/.env
 

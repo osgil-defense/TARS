@@ -1,6 +1,6 @@
 {
-  "name": "chat-application",
-  "version": "0.1.5",
+  "name": "tars-frontend",
+  "version": "0.1.6",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^6.4.6",
