@@ -11,13 +11,13 @@ The new frontend for TARS. This code was originally hosted at the [TARS-frontend
 1. Install [Node.js](https://nodejs.org/en)
 2. Create a ".env" file. Refer to the ".template_env" file see what you need to provide in the ".env" file for.
 3. Install dependencies:
-    ```bash
-    npm install
-    ```
+   ```bash
+   npm install
+   ```
 4. Start the web app:
-    ```bash
-    npm start
-    ```
+   ```bash
+   npm start
+   ```
 5. In your browser, go to: http://localhost:3000/
 
 ## Notes
