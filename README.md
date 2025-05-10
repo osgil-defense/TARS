@@ -2,6 +2,7 @@
 
 <p align="center">
     <img width="500" src="./frontend/logo.png">
+    
 </p>
 
 ## About
